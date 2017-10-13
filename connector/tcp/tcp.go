@@ -5,6 +5,13 @@ import (
 	"log"
 	"../option"
 	"../../hub"
+	"bytes"
+	"../../protocol"
+	"time"
+)
+
+var (
+	heartbeatInterval = 5 * time.Second
 )
 
 type TcpSocket struct {
@@ -22,6 +29,7 @@ func (socket *TcpSocket) Start(h *hub.Hub, host ,port string)  {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer listener.Close()
 
 	for {
 		conn, err := listener.Accept()
@@ -38,19 +46,64 @@ func (socket *TcpSocket) Start(h *hub.Hub, host ,port string)  {
 		}}
 		session.Hub.Register <- session
 
-		go handleConn(conn.(net.TCPConn))
+		go session.readPump()
+		go session.writePump()
 
 	}
 }
 
-func (socket *TcpSocket)Read()  {
-
+func (socket *TcpSocket)readPump()  {
+	var buffer bytes.Buffer
+	var length int
+	for {
+		data := make([]byte, 64)
+		_, err := socket.Conn.Read(data)
+		if err != nil {
+			if err == net.UnknownNetworkError.Error() {
+				return
+			}
+		}
+		buffer.Write(data)
+		length = protocol.GetPackageLength(buffer.Bytes())
+		message := make([]byte, length)
+		_, err = buffer.Read(message)
+		if err != nil {
+			log.Fatalf("read data error: %v", err)
+		}
+		socket.HandleData(message)
+	}
 }
 
-func (socket *TcpSocket) Write(data []byte)  {
+func (socket *TcpSocket) writePump()  {
+	ticker := time.NewTicker(heartbeatInterval)
+	defer func() {
+		ticker.Stop()
+		socket.Close()
+	}()
 
+	for {
+		select {
+		case message, ok := socket.Send:
+			socket.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
+			if !ok {
+				//todo close session
+				return
+			}
+
+			_, err := socket.Conn.Write(message)
+			if err != nil {
+				//todo close
+				return
+			}
+
+		case <-ticker.C:
+			socket.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
+			//todo write heartbeat
+		}
+	}
 }
 
-func (socket *TcpSocket) Close()  {
 
+func (socket *TcpSocket) SetOption(option *option.ConnectorOption)  {
+	socket.option = option
 }

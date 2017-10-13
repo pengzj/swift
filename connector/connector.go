@@ -1,7 +1,6 @@
 package connector
 
 import (
-	"sync"
 	"../hub"
 	"./tcp"
 	"./udp"
@@ -11,10 +10,11 @@ import (
 
 type Socket interface {
 	Start(hub *hub.Hub, host string, port string)
-	Read([]byte)
 	Write([]byte)
 	Close()
 	SetOption(*option.ConnectorOption)
+	readPump()
+	writePump()
 }
 
 

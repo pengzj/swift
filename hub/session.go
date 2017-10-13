@@ -64,6 +64,12 @@ func (session *Session) HandleData(data []byte)  {
 	}
 }
 
+func (session *Session) Close()  {
+	session.Trigger("onClosed")
+	session.Conn.Close()
+	close(session.Send)
+}
+
 func (session *Session) Write(data []byte)  {
 	session.Send <- data
 }

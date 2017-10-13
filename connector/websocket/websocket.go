@@ -78,15 +78,6 @@ func serveWs(h *hub.Hub, w http.ResponseWriter, r *http.Request)  {
 	go session.writePump()
 }
 
-func (socket *WebSocket) Write(data []byte)  {
-	socket.Send <- data
-}
-
-func (socket *WebSocket) Close()  {
-	socket.Conn.Close()
-	close(socket.Send)
-	socket.Trigger("onClosed")
-}
 
 func (socket *WebSocket) readPump()  {
 	defer func() {
@@ -155,4 +146,8 @@ func (socket *WebSocket) writePump()  {
 
 		}
 	}
+}
+
+func (socket *WebSocket) SetOption(option *option.ConnectorOption)  {
+	socket.option = option
 }
