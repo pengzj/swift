@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"log"
 	"../protocol"
+	"../internal"
 )
 
 
@@ -55,12 +56,32 @@ func (session *Session) Trigger(name string)  {
 func (session *Session) HandleData(data []byte)  {
 	packageType, body := protocol.Decode(data)
 	switch packageType {
-	case protocol.PACKAGE_TYPE_HANDSHAKE:
-	case protocol.PACKAGE_TYPE_ACK:
-	case protocol.PACKAGE_TYPE_HEARTBEAT:
-	case protocol.PACKAGE_TYPE_DATA:
-	case protocol.PACKAGE_TYPE_ACK:
-
+	case protocol.TYPE_HANDSHAKE:
+		data = internal.GetRoutes()
+		message := protocol.MessageEncode(0, 0, data)
+		session.Write(protocol.Encode(protocol.TYPE_HANDSHAKE_ACK, message))
+		return
+	case protocol.TYPE_HEARTBEAT:
+		return
+	case protocol.TYPE_DATA_NOTIFY:
+		_, routeId, body := protocol.MessageDecode(body)
+		handler, err := internal.GetHandler(routeId)
+		if err == nil {
+			_ = handler(body)
+		}
+		return
+	case protocol.TYPE_DATA_REQUEST:
+		requestId, routeId, body := protocol.MessageDecode(body)
+		handler, err := internal.GetHandler(routeId)
+		var data []byte
+		if err != nil {
+			data = internal.NotFound()
+		} else {
+			data = handler(body)
+		}
+		message := protocol.MessageEncode(requestId, routeId, data)
+		session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, message))
+		return
 	}
 }
 
@@ -72,4 +93,8 @@ func (session *Session) Close()  {
 
 func (session *Session) Write(data []byte)  {
 	session.Send <- data
+}
+
+func (session *Session)Send()  {
+
 }

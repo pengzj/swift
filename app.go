@@ -3,9 +3,8 @@ package swift
 import (
 	"./master"
 	"./server"
-	"./hub"
 	"./connector/option"
-	"google.golang.org/grpc"
+	"./internal"
 )
 
 type EnumState uint8
@@ -26,13 +25,7 @@ type Application struct {
 	connectorOptions map[string]*option.ConnectorOption
 	master *master.Master
 	server *server.Server
-
-	handlerMap map[string]func(*hub.Session)
-	routeList []string
-
-	rpcMap map[string]*grpc.ClientConn
 }
-
 
 
 
@@ -62,12 +55,8 @@ func (app *Application) Run()  {
 	app.startServers()
 }
 
-func (app *Application) HandleFunc(name string, handler func(*hub.Session))  {
-	if app.handlerMap[name] != nil {
-		panic("func " + name + " register twice")
-	}
-	app.handlerMap[name] = handler
-	app.routeList = append(app.routeList, name)
+func (app *Application) HandleFunc(name string, handler func(interface{})(result []byte))  {
+	internal.HandleFunc(name, handler())
 }
 
 

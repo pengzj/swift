@@ -40,7 +40,7 @@ const (
  * |    messageId   |  routeId       |     message      |
  * +----------------+----------------+-------------------+
  *
- *  messageId (1 ~ 10 bytes)
+ * messageId (1 ~ 10 bytes)
  * routeId (1 ~ 10 bytes)
  * data
  */
