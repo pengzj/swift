@@ -7,7 +7,12 @@ import (
 	"log"
 )
 
-func (s *Service) OnlineStatistics(ctx context.Context, in *pb.OnlineRequest) (*pb.OnlineReply, error) {
+type Master struct {
+
+}
+
+
+func (s *Master) OnlineStatistics(ctx context.Context, in *pb.OnlineRequest) (*pb.OnlineReply, error) {
 	serverType := in.Type
 	servers := internal.GetServersByType(serverType)
 	if servers == nil {
@@ -29,5 +34,5 @@ func (s *Service) OnlineStatistics(ctx context.Context, in *pb.OnlineRequest) (*
 }
 
 func LoadMaster()  {
-	pb.RegisterOnlineServer(std.server,&Service{})
+	pb.RegisterOnlineServer(std,&Master{})
 }

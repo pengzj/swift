@@ -8,17 +8,19 @@ import (
 )
 
 type RpcServer struct {
-	server *grpc.Server
+	Server *grpc.Server
 }
 
 var std *RpcServer
 
 
-func GetServer()  *RpcServer{
-	if std == nil {
-		std = new(RpcServer)
-		std.server = grpc.NewServer()
+func NewServer()  *RpcServer{
+	return &RpcServer{
+		Server: grpc.NewServer(),
 	}
+}
+
+func GetServer() *RpcServer {
 	return std
 }
 
@@ -28,14 +30,20 @@ func (rcpServer *RpcServer)Start(host, port string)  {
 		log.Fatal(err)
 	}
 
-	//todo register server handle
-
 	reflection.Register(std)
-	if err := std.server.Serve(listener); err != nil {
+	if err := std.Server.Serve(listener); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (rcpServer *RpcServer) Close()  {
-	
+func (rpcServer *RpcServer) Close()  {
+	rpcServer.Server.Stop()
+}
+
+func init() {
+	if std == nil {
+		std = new(RpcServer)
+		std.Server = grpc.NewServer()
+	}
+	return std
 }

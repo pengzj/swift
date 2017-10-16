@@ -38,13 +38,17 @@ func (server *Server) startRpcServer()  {
 	server.rpcServer = rpc.GetServer()
 
 	if server.IsMaster == true {
-		//todo
 		rpc.LoadMaster()
+	} else {
+		rpc.LoadServer()
 	}
 
 	server.rpcServer.Start(server.Host, server.Port)
 }
 
 func (server *Server) Stop()  {
+	if server.Frontend == true {
+		server.Connector.Close()
+	}
 	server.rpcServer.Close()
 }

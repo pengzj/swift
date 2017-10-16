@@ -8,6 +8,8 @@ import (
 	"log"
 	"../protocol"
 	"../internal"
+	"google.golang.org/grpc"
+	"hash/crc32"
 )
 
 
@@ -94,6 +96,25 @@ func (session *Session) Write(data []byte)  {
 	session.Send <- data
 }
 
-func (session *Session)Send()  {
+func (session *Session) Set(key string, value interface{})  {
+	session.userData[key] = value
+}
 
+func (session *Session) Get(key string) interface{} {
+	return session.userData[key]
+}
+
+func (session *Session) GetClientConn(serverType string) *grpc.ClientConn  {
+	handler := GetHub().GetRouteHandle(serverType)
+	var serverId string
+	if handler == nil {
+		servers := internal.GetServersByType(serverType)
+		crc := crc32.ChecksumIEEE([]byte(session.Id))
+		idx := int(crc%len(servers))
+		serverId = servers[idx].Id
+
+	} else {
+		serverId = handler(session)
+	}
+	return internal.GetClientConnByServerId(serverId)
 }

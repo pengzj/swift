@@ -50,7 +50,7 @@ func (connector *Connector) Start(connType, host, port string)  {
 	connector.socket.Start(host, port)
 }
 
-func (connector *Connector) Stop()  {
+func (connector *Connector) Close()  {
 	connector.socket.Close()
 }
 

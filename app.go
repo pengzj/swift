@@ -4,6 +4,7 @@ import (
 	"./server"
 	"./connector/option"
 	"./internal"
+	"./hub"
 )
 
 type EnumState uint8
@@ -49,6 +50,10 @@ func (app *Application) Run()  {
 
 func (app *Application) HandleFunc(name string, handler func(interface{})(result []byte))  {
 	internal.HandleFunc(name, handler())
+}
+
+func (app *Application) Route(serverType string, handler func(session *hub.Session)string) {
+	hub.GetHub().Route(serverType, handler)
 }
 
 

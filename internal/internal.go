@@ -8,10 +8,10 @@ import (
 
 type Internal struct {
 	handlerMap map[string]func([]byte)[]byte
-	routeList []string
+	handlerList []string
 	rpcClientMap map[string]*grpc.ClientConn
 
-	serverMap map[string][]Server
+	serverMap map[string]Server
 }
 
 type Server struct {
@@ -33,14 +33,14 @@ func HandleFunc(name string, handler func(interface{}) []byte)  {
 		panic("func " + name + " register twice")
 	}
 	std.handlerMap[name] = handler
-	std.routeList = append(std.routeList, name)
+	std.handlerList = append(std.handlerList, name)
 }
 
 func GetHandler(handleId int) (func(interface{}) []byte, error) {
-	if len(std.routeList) <= handleId {
+	if len(std.handlerList) <= handleId {
 		return nil, error.Error("handler exist")
 	}
-	name := std.routeList[handleId]
+	name := std.handlerList[handleId]
 	return std.handlerMap[name], nil
 }
 
@@ -51,7 +51,7 @@ func GetRoutes() []byte {
 		Name string
 	}
 	var routes []route
-	for id, name :=range std.routeList {
+	for id, name :=range std.handlerList {
 		routes = append(routes, route{
 			Id:id,
 			Name:name,
@@ -70,16 +70,23 @@ func NotFound()  []byte {
 
 func PutServers(servers []Server)  {
 	for _, server :=range servers {
-		if std.serverMap[server.Type] == nil {
-			std.serverMap[server.Type] = []Server{}
-		}
-		std.serverMap[server.Type] = append(std.serverMap[server.Type], server)
+		std.serverMap[server.Id] = server
 	}
 }
 
 
 func GetServersByType(serverType string) []Server {
-	return std.serverMap[serverType]
+	var servers []Server
+	for _, server :=range std.serverMap {
+		if server.Type == serverType {
+			servers = append(servers, server)
+		}
+	}
+	return servers
+}
+
+func GetServerById(serverId string) Server  {
+	return std.serverMap[serverId]
 }
 
 func GetClientConn(serverId string) *grpc.ClientConn  {
@@ -98,13 +105,16 @@ func loadClientConnByServer(server Server)  {
 	std.rpcClientMap[server.Id] = conn
 }
 
-func GetClientConnByServer(server Server) *grpc.ClientConn  {
-	conn := std.rpcClientMap[server.Id]
+func GetClientConnByServerId(serverId string) *grpc.ClientConn  {
+	conn := std.rpcClientMap[serverId]
 	if conn != nil {
 		return conn
 	}
+
+	server := std.serverMap[serverId]
 	loadClientConnByServer(server)
-	return std.rpcClientMap[server.Id]
+
+	return std.rpcClientMap[serverId]
 }
 
 func init() {
@@ -121,5 +131,5 @@ func init() {
 		data, _ := json.Marshal(body)
 		return data
 	}
-	std.routeList[0] = "notFound"
+	std.handlerList[0] = "notFound"
 }
