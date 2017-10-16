@@ -15,6 +15,7 @@ type Server struct {
 	Port string `json:"port"`
 	Frontend bool `json:"frontend"`
 
+	IsMaster bool `json:"-"`
 	Connector *connector.Connector `json:"-"`
 	rpcServer *rpc.RpcServer `json:"-"`
 }
@@ -23,6 +24,7 @@ func (server *Server) Start(option *option.ConnectorOption)  {
 	if server.Frontend == true {
 		server.startServer(option)
 	}
+
 	server.startRpcServer()
 }
 
@@ -34,6 +36,12 @@ func (server *Server) startServer(option *option.ConnectorOption)  {
 
 func (server *Server) startRpcServer()  {
 	server.rpcServer = rpc.GetServer()
+
+	if server.IsMaster == true {
+		//todo
+		rpc.LoadMaster()
+	}
+
 	server.rpcServer.Start(server.Host, server.Port)
 }
 

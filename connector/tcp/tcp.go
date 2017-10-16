@@ -20,7 +20,7 @@ type TcpSocket struct {
 	option *option.ConnectorOption
 }
 
-func (socket *TcpSocket) Start(h *hub.Hub, host ,port string)  {
+func (socket *TcpSocket) Start(host ,port string)  {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", host + ":" + port)
 	if err != nil {
 		log.Fatal(err)
@@ -40,11 +40,10 @@ func (socket *TcpSocket) Start(h *hub.Hub, host ,port string)  {
 		conn = conn.(net.TCPConn)
 		session := &TcpSocket{hub.Session{
 			Id: hub.UniqueId(),
-			Hub: h,
 			Conn:&conn,
 			Send: make(chan []byte),
 		}}
-		session.Hub.Register <- session
+		hub.GetHub().Register <- session
 
 		go session.readPump()
 		go session.writePump()
@@ -86,19 +85,21 @@ func (socket *TcpSocket) writePump()  {
 		case message, ok := socket.Send:
 			socket.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
 			if !ok {
-				//todo close session
 				return
 			}
 
 			_, err := socket.Conn.Write(message)
 			if err != nil {
-				//todo close
-				return
+   				return
 			}
 
 		case <-ticker.C:
 			socket.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
-			//todo write heartbeat
+			_, err := socket.Conn.Write(protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
 		}
 	}
 }

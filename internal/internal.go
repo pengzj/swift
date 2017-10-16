@@ -9,11 +9,23 @@ import (
 type Internal struct {
 	handlerMap map[string]func([]byte)[]byte
 	routeList []string
-	rpcMap map[string]*grpc.ClientConn
+	rpcClientMap map[string]*grpc.ClientConn
+
+	serverMap map[string][]Server
 }
 
-var std *Internal
+type Server struct {
+	Type string
+	Id string
+	ClientHost string
+	ClientPort string
+	Host string
+	Port string
+	Frontend bool
+}
 
+
+var std *Internal
 
 
 func HandleFunc(name string, handler func(interface{}) []byte)  {
@@ -56,6 +68,44 @@ func NotFound()  []byte {
 	return std.handlerMap["notFound"]()
 }
 
+func PutServers(servers []Server)  {
+	for _, server :=range servers {
+		if std.serverMap[server.Type] == nil {
+			std.serverMap[server.Type] = []Server{}
+		}
+		std.serverMap[server.Type] = append(std.serverMap[server.Type], server)
+	}
+}
+
+
+func GetServersByType(serverType string) []Server {
+	return std.serverMap[serverType]
+}
+
+func GetClientConn(serverId string) *grpc.ClientConn  {
+	return std.rpcClientMap[serverId]
+}
+
+func SetClientConn(serverId string, clientConn *grpc.ClientConn)  {
+	std.rpcClientMap[serverId] = clientConn
+}
+
+func loadClientConnByServer(server Server)  {
+	conn, err := grpc.Dial(server.Host + ":" +server.Port, grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	std.rpcClientMap[server.Id] = conn
+}
+
+func GetClientConnByServer(server Server) *grpc.ClientConn  {
+	conn := std.rpcClientMap[server.Id]
+	if conn != nil {
+		return conn
+	}
+	loadClientConnByServer(server)
+	return std.rpcClientMap[server.Id]
+}
 
 func init() {
 	std = new(Internal)

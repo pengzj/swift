@@ -9,7 +9,7 @@ import (
 )
 
 type Socket interface {
-	Start(hub *hub.Hub, host string, port string)
+	Start(host string, port string)
 	Write([]byte)
 	Close()
 	SetOption(*option.ConnectorOption)
@@ -45,10 +45,9 @@ func (connector *Connector) Start(connType, host, port string)  {
 		connector.socket.SetOption(connector.option)
 	}
 
-	var hub *hub.Hub = hub.NewHub()
-	go hub.Run()
+	go hub.GetHub().Run()
 
-	connector.socket.Start(hub, host, port)
+	connector.socket.Start(host, port)
 }
 
 func (connector *Connector) Stop()  {

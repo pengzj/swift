@@ -17,6 +17,8 @@ func NewHub() *Hub {
 	}
 }
 
+var std *Hub
+
 func (hub *Hub) Run()  {
 	for {
 		select {
@@ -35,5 +37,30 @@ func (hub *Hub) Run()  {
 				}
 			}
 		}
+	}
+}
+
+func (hub *Hub)GetSessionById(id string) *Session {
+	return hub.Sessions[id]
+}
+
+func (hub *Hub) Kick(session *Session)  {
+	hub.Unregister <- session
+}
+
+func (hub *Hub) Size() int {
+	return len(hub.Sessions)
+}
+
+func GetHub()  *Hub {
+	return std
+}
+
+func init() {
+	std = &Hub{
+		Sessions: make(map[string]*Session),
+		Register: make(chan []*Session),
+		Unregister:make(chan []*Session),
+		Broadcast: make(chan []byte),
 	}
 }

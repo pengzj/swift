@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"io/ioutil"
 	"log"
-	"./master"
 	"./server"
 	"encoding/json"
+	"./internal"
 )
 
 func (app *Application) init()  {
@@ -15,54 +15,66 @@ func (app *Application) init()  {
 }
 
 func (app *Application) loadDefaultConfig()  {
-	app.loadMaster()
-
-	serverId := flag.String("serverId", "", "input correct serverId")
+	var serverId string
+	flag.StringVar(&serverId, "serverId", "", "input correct serverId")
 	flag.Parse()
 
+	var serverType = "";
 
-	app.serverId = *serverId
-
-	if app.serverId == "" {
-		app.serverType = SERVER_MASTER
+	if serverId  == "" {
+		serverType = SERVER_MASTER
 	}
 
-	if app.IsMaster() == false {
-		app.loadServer()
-	}
-}
 
-func (app *Application) loadServer()  {
-	filePath := filepath.Join(app.configPath, "servers.json")
-	in, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	var servers  []server.Server
-	err = json.Unmarshal(in, &servers)
-	if err != nil {
-		log.Fatal(err)
-	}
+	var filePath string
 
-	for _, s := range servers {
-		if s.Id == app.serverId {
-			app.server = &s
-			break
+	var server *server.Server
+
+	if serverType == SERVER_MASTER {
+		filePath = filepath.Join(app.configPath, "master.json")
+		in, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			log.Fatal(err)
 		}
-	}
-}
+		err = json.Unmarshal(in, server)
+		if err != nil {
+			log.Fatal(err)
+		}
+		server.IsMaster = true
 
-func (app *Application) loadMaster()  {
-	filePath := filepath.Join(app.configPath, "master.json")
+		app.server = server
+	}
+
+
+	filePath = filepath.Join(app.configPath, "servers.json")
+	var servers []*server.Server
 	in, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	m := new(master.Master)
-	err = json.Unmarshal(in, m)
+	err = json.Unmarshal(in, servers)
 	if err != nil {
 		log.Fatal(err)
 	}
-	app.master = m
+
+	var internalServers []internal.Server
+
+	for _, s :=range servers {
+		if s.Id == serverId {
+			app.server = s
+		}
+		internalServers = append(internalServers, internal.Server{
+			Type:s.Type,
+			Id:s.Id,
+			ClientHost:s.ClientHost,
+			ClientPort:s.ClientPort,
+			Host:s.Host,
+			Port:s.Port,
+			Frontend:s.Frontend,
+		})
+	}
+
+
+	internal.PutServers(internalServers)
 }

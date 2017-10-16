@@ -14,13 +14,8 @@ func (app *Application) GetConnectionOption(serverType string) *option.Connector
 }
 
 func (app *Application) startServers()  {
-	option := app.GetConnectionOption(app.serverType)
-
-	if app.IsMaster() == true {
-		app.master.Start()
-	} else {
-		app.server.Start(option)
-	}
+	option := app.GetConnectionOption(app.server.Type)
+	app.server.Start(option)
 }
 
 

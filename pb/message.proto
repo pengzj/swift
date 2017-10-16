@@ -1,0 +1,31 @@
+syntax = "proto3";
+package pb;
+
+//master - client communication
+message OnlineRequest {
+    string type = 1;
+}
+
+message OnlineReply {
+    message Online {
+        string Id = 1;
+        uint32 count = 2;
+    }
+    repeated Online servers = 1;
+    uint32 total = 2;
+}
+
+//master - servers communication
+message InterOnlineRequest {
+
+}
+
+message InterOnlineReply {
+    uint32 count = 1;
+}
+
+service Online {
+    rpc OnlineStatistics(OnlineRequest) returns (OnlineReply) {}
+    rpc InterOnline(InterOnlineRequest) returns (InterOnlineReply) {}
+}
+

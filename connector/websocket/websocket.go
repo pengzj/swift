@@ -43,9 +43,9 @@ func (socket *WebSocket) SetCert(certFile, keyFile string)  {
 	socket.keyFile = keyFile
 }
 
-func (socket *WebSocket)Start(hub *hub.Hub, host string, port string)  {
+func (socket *WebSocket)Start(host string, port string)  {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
+		serveWs(w, r)
 	})
 
 	var err error
@@ -60,7 +60,7 @@ func (socket *WebSocket)Start(hub *hub.Hub, host string, port string)  {
 
 }
 
-func serveWs(h *hub.Hub, w http.ResponseWriter, r *http.Request)  {
+func serveWs(w http.ResponseWriter, r *http.Request)  {
 	conn, err := upgrader.Upgrade(w,r, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -68,11 +68,10 @@ func serveWs(h *hub.Hub, w http.ResponseWriter, r *http.Request)  {
 
 	session := &WebSocket{hub.Session{
 		Id: hub.UniqueId(),
-		Hub:h,
 		Conn:conn,
 		Send:make(chan []byte),
 	}}
-	session.Hub.Register <- session
+	hub.GetHub().Register <- session
 
 	go session.readPump()
 	go session.writePump()
@@ -81,7 +80,6 @@ func serveWs(h *hub.Hub, w http.ResponseWriter, r *http.Request)  {
 
 func (socket *WebSocket) readPump()  {
 	defer func() {
-		socket.Hub.Unregister <- socket
 		socket.Close()
 	}()
 	socket.Conn.SetReadLimit(maxMessageSize)
@@ -141,6 +139,7 @@ func (socket *WebSocket) writePump()  {
 		case <-ticker.C:
 			socket.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := socket.Conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+				log.Fatal(err)
 				return
 			}
 

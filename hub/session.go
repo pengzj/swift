@@ -27,7 +27,6 @@ type message struct {
 
 type Session struct {
 	Id string
-	Hub *Hub
 	Conn net.Conn
 	Send chan []byte
 	Bind func(string, func())
@@ -79,13 +78,13 @@ func (session *Session) HandleData(data []byte)  {
 		} else {
 			data = handler(body)
 		}
-		message := protocol.MessageEncode(requestId, routeId, data)
-		session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, message))
+		session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, protocol.MessageEncode(requestId, routeId, data)))
 		return
 	}
 }
 
 func (session *Session) Close()  {
+	GetHub().Unregister <- session
 	session.Trigger("onClosed")
 	session.Conn.Close()
 	close(session.Send)

@@ -1,7 +1,6 @@
 package swift
 
 import (
-	"./master"
 	"./server"
 	"./connector/option"
 	"./internal"
@@ -18,12 +17,9 @@ const (
 
 type Application struct {
 	state EnumState
-	serverId string
-	serverType string
 	configPath string
 	logPath string
 	connectorOptions map[string]*option.ConnectorOption
-	master *master.Master
 	server *server.Server
 }
 
@@ -39,15 +35,11 @@ func (app *Application) SetLogPath(path string)  {
 
 
 func (app * Application) IsMaster() bool {
-	return  app.serverType == SERVER_MASTER;
+	return  app.server.Type == SERVER_MASTER;
 }
 
 func (app *Application) getServerType() string {
-	return app.serverType;
-}
-
-func (app *Application) getMaster() *master.Master {
-	return app.master
+	return app.server.Type;
 }
 
 func (app *Application) Run()  {
