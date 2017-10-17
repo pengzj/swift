@@ -48,7 +48,7 @@ func (app *Application) Run()  {
 	app.startServers()
 }
 
-func (app *Application) HandleFunc(name string, handler func(interface{})(result []byte))  {
+func (app *Application) HandleFunc(name string, handler func(interface{}) []byte)  {
 	internal.HandleFunc(name, handler())
 }
 

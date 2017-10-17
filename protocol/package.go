@@ -46,7 +46,11 @@ const (
  */
 
 
-func GetPackageLength(data []byte) int {
+func GetHeadLength() int  {
+	return 4
+}
+
+func GetBodyLength(data []byte) int {
 	lenBytes := make([]byte, 4)
 	lenBytes[0] = 0x0
 	copy(lenBytes[1:], data[1:4])
@@ -76,7 +80,7 @@ func Encode(packageType int, body []byte) []byte {
 
 func Decode(data []byte) (packageType int, body []byte) {
 	packageType = int(data[0])
-	length := GetPackageLength(data)
+	length := GetBodyLength(data)
 	body = data[4:length]
 
 	return

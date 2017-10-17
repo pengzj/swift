@@ -4,10 +4,11 @@ import (
 	"google.golang.org/grpc"
 	"encoding/json"
 	"log"
+	"errors"
 )
 
 type Internal struct {
-	handlerMap map[string]func([]byte)[]byte
+	handlerMap map[string]func(interface{}, []byte)[]byte
 	handlerList []string
 	rpcClientMap map[string]*grpc.ClientConn
 
@@ -28,7 +29,7 @@ type Server struct {
 var std *Internal
 
 
-func HandleFunc(name string, handler func(interface{}) []byte)  {
+func HandleFunc(name string, handler func(interface{}, []byte) []byte)  {
 	if std.handlerMap[name] != nil {
 		panic("func " + name + " register twice")
 	}
@@ -36,12 +37,26 @@ func HandleFunc(name string, handler func(interface{}) []byte)  {
 	std.handlerList = append(std.handlerList, name)
 }
 
-func GetHandler(handleId int) (func(interface{}) []byte, error) {
+func GetHandler(handleId int) (func(interface{}, []byte) []byte, error) {
 	if len(std.handlerList) <= handleId {
-		return nil, error.Error("handler exist")
+		return nil, errors.New("handler exist")
 	}
 	name := std.handlerList[handleId]
 	return std.handlerMap[name], nil
+}
+
+func GetHandlerId(name string) (int, error)  {
+	var handerId = 0
+	for id, val :=range std.handlerList {
+		if name == val {
+			handerId = id
+			break
+		}
+	}
+	if handerId == 0 {
+		return  0, errors.New("no found handle")
+	}
+	return handerId, nil
 }
 
 func GetRoutes() []byte {
@@ -64,8 +79,8 @@ func GetRoutes() []byte {
 	return data
 }
 
-func NotFound()  []byte {
-	return std.handlerMap["notFound"]()
+func NotFound() []byte {
+	return std.handlerMap["notFound"](nil, []byte{})
 }
 
 func PutServers(servers []Server)  {
@@ -87,10 +102,6 @@ func GetServersByType(serverType string) []Server {
 
 func GetServerById(serverId string) Server  {
 	return std.serverMap[serverId]
-}
-
-func GetClientConn(serverId string) *grpc.ClientConn  {
-	return std.rpcClientMap[serverId]
 }
 
 func SetClientConn(serverId string, clientConn *grpc.ClientConn)  {
@@ -120,7 +131,7 @@ func GetClientConnByServerId(serverId string) *grpc.ClientConn  {
 func init() {
 	std = new(Internal)
 
-	std.handlerMap["notFound"] = func() []byte {
+	std.handlerMap["notFound"] = func(interface{}, []byte) []byte {
 		var body = struct {
 			Code int
 			Message string

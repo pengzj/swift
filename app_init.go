@@ -25,31 +25,38 @@ func (app *Application) loadDefaultConfig()  {
 		serverType = SERVER_MASTER
 	}
 
+	var internalServers []internal.Server
+
 
 
 	var filePath string
 
 	var server *server.Server
 
-	if serverType == SERVER_MASTER {
-		filePath = filepath.Join(app.configPath, "master.json")
-		in, err := ioutil.ReadFile(filePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = json.Unmarshal(in, server)
-		if err != nil {
-			log.Fatal(err)
-		}
-		server.IsMaster = true
+	filePath = filepath.Join(app.configPath, "master.json")
+	in, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = json.Unmarshal(in, server)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server.Type = SERVER_MASTER
+	server.IsMaster = true
+	server.Frontend = false
 
+
+	internalServers = append(internalServers, server)
+
+
+	if serverType == SERVER_MASTER {
 		app.server = server
 	}
 
-
 	filePath = filepath.Join(app.configPath, "servers.json")
 	var servers []*server.Server
-	in, err := ioutil.ReadFile(filePath)
+	in, err = ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,7 +65,6 @@ func (app *Application) loadDefaultConfig()  {
 		log.Fatal(err)
 	}
 
-	var internalServers []internal.Server
 
 	for _, s :=range servers {
 		if s.Id == serverId {

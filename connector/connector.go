@@ -4,7 +4,6 @@ import (
 	"../hub"
 	"./tcp"
 	"./udp"
-	"./websocket"
 	"./option"
 )
 
@@ -35,9 +34,6 @@ func (connector *Connector) Start(connType, host, port string)  {
 		break;
 	case "udp":
 		connector.socket = new(udp.UdpSocket)
-		break;
-	case "websocket":
-		connector.socket = new(websocket.WebSocket)
 		break;
 	}
 

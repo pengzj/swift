@@ -30,7 +30,7 @@ func (rcpServer *RpcServer)Start(host, port string)  {
 		log.Fatal(err)
 	}
 
-	reflection.Register(std)
+	reflection.Register(std.Server)
 	if err := std.Server.Serve(listener); err != nil {
 		log.Fatal(err)
 	}
@@ -41,9 +41,6 @@ func (rpcServer *RpcServer) Close()  {
 }
 
 func init() {
-	if std == nil {
-		std = new(RpcServer)
-		std.Server = grpc.NewServer()
-	}
-	return std
+	std = new(RpcServer)
+	std.Server = grpc.NewServer()
 }

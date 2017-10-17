@@ -31,8 +31,6 @@ type Session struct {
 	Id string
 	Conn net.Conn
 	Send chan []byte
-	Bind func(string, func())
-	Trigger func(string)
 	handlerMap map[string]func()
 
 	MessageId int
@@ -68,7 +66,7 @@ func (session *Session) HandleData(data []byte)  {
 		_, routeId, body := protocol.MessageDecode(body)
 		handler, err := internal.GetHandler(routeId)
 		if err == nil {
-			_ = handler(body)
+			_ = handler(session, body)
 		}
 		return
 	case protocol.TYPE_DATA_REQUEST:
@@ -78,7 +76,7 @@ func (session *Session) HandleData(data []byte)  {
 		if err != nil {
 			data = internal.NotFound()
 		} else {
-			data = handler(body)
+			data = handler(session, body)
 		}
 		session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, protocol.MessageEncode(requestId, routeId, data)))
 		return
@@ -96,6 +94,18 @@ func (session *Session) Write(data []byte)  {
 	session.Send <- data
 }
 
+func (session *Session) Push(route string, data []byte)  {
+	handlerId, err := internal.GetHandlerId(route)
+	if err != nil {
+		return
+	}
+	session.Write(protocol.Encode(protocol.TYPE_DATA_PUSH, protocol.MessageEncode(0, handlerId, data)))
+}
+
+func (session *Session) Kick(data []byte)  {
+	session.Write(protocol.Encode(protocol.TYPE_KICK, protocol.MessageEncode(0,0, data)))
+}
+
 func (session *Session) Set(key string, value interface{})  {
 	session.userData[key] = value
 }
@@ -110,7 +120,7 @@ func (session *Session) GetClientConn(serverType string) *grpc.ClientConn  {
 	if handler == nil {
 		servers := internal.GetServersByType(serverType)
 		crc := crc32.ChecksumIEEE([]byte(session.Id))
-		idx := int(crc%len(servers))
+		idx := int(crc%uint32(len(servers)))
 		serverId = servers[idx].Id
 
 	} else {

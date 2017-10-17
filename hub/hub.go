@@ -17,8 +17,8 @@ type Hub struct {
 func NewHub() *Hub {
 	return &Hub{
 		Sessions: make(map[string]*Session),
-		Register: make(chan []*Session),
-		Unregister:make(chan []*Session),
+		Register: make(chan *Session),
+		Unregister:make(chan *Session),
 		Broadcast: make(chan []byte),
 	}
 }
@@ -36,7 +36,6 @@ func (hub *Hub) Run()  {
 			hub.mu.Lock()
 			delete(hub.Sessions, session.Id)
 			hub.mu.Unlock()
-			close(session.Send)
 		case message := <- hub.Broadcast:
 			for _, session := range hub.Sessions {
 				session.Write(message)
@@ -54,6 +53,8 @@ func (hub *Hub) GetRouteHandle(serverType string) func(*Session)string  {
 }
 
 func (hub *Hub)GetSessionById(id string) *Session {
+	hub.mu.Lock()
+	defer hub.mu.Unlock()
 	return hub.Sessions[id]
 }
 
@@ -72,8 +73,8 @@ func GetHub()  *Hub {
 func init() {
 	std = &Hub{
 		Sessions: make(map[string]*Session),
-		Register: make(chan []*Session),
-		Unregister:make(chan []*Session),
+		Register: make(chan *Session),
+		Unregister:make(chan *Session),
 		Broadcast: make(chan []byte),
 	}
 }

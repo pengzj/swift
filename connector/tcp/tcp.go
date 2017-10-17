@@ -25,7 +25,7 @@ func (socket *TcpSocket) Start(host ,port string)  {
 	if err != nil {
 		log.Fatal(err)
 	}
-	listener, err := net.Listen("tcp", tcpAddr)
+	listener, err := net.Listen("tcp", tcpAddr.String())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,12 +37,13 @@ func (socket *TcpSocket) Start(host ,port string)  {
 			log.Fatal(err)
 		}
 
-		conn = conn.(net.TCPConn)
-		session := &TcpSocket{hub.Session{
+		session := new(TcpSocket)
+		session.Session = hub.Session{
 			Id: hub.UniqueId(),
-			Conn:&conn,
+			Conn: conn,
 			Send: make(chan []byte),
-		}}
+		}
+
 		hub.GetHub().Register <- session
 
 		go session.readPump()
@@ -53,23 +54,42 @@ func (socket *TcpSocket) Start(host ,port string)  {
 
 func (socket *TcpSocket)readPump()  {
 	var buffer bytes.Buffer
+	var headerLength = protocol.GetHeadLength()
+	var currentTotalLength int
 	var length int
 	for {
-		data := make([]byte, 64)
-		_, err := socket.Conn.Read(data)
+		data := make([]byte, 1024)
+		n, err := socket.Conn.Read(data)
 		if err != nil {
-			if err == net.UnknownNetworkError.Error() {
-				return
+			log.Fatal("read data error: %v", err)
+			return
+		}
+		buf := make([]byte, n)
+		copy(buf, data[0:n])
+
+		buffer.Write(buf)
+
+		currentTotalLength = len(buffer.Bytes())
+		length = headerLength +  protocol.GetBodyLength(buffer.Bytes())
+		message := make([]byte, length)
+		if length <= currentTotalLength {
+			_, err = buffer.Read(message)
+			if err != nil {
+				log.Fatalf("read data error: %v", err)
+			}
+			socket.HandleData(message)
+
+			leftLength := currentTotalLength - length
+			if leftLength > 0 {
+				leftData := make([]byte, leftLength)
+				_, err = buffer.Read(leftData)
+				if err != nil {
+					log.Fatal("package data error: %v", err)
+				}
+				buffer.Reset()
+				buffer.Write(leftData)
 			}
 		}
-		buffer.Write(data)
-		length = protocol.GetPackageLength(buffer.Bytes())
-		message := make([]byte, length)
-		_, err = buffer.Read(message)
-		if err != nil {
-			log.Fatalf("read data error: %v", err)
-		}
-		socket.HandleData(message)
 	}
 }
 
@@ -82,11 +102,8 @@ func (socket *TcpSocket) writePump()  {
 
 	for {
 		select {
-		case message, ok := socket.Send:
+		case message := <-socket.Send:
 			socket.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
-			if !ok {
-				return
-			}
 
 			_, err := socket.Conn.Write(message)
 			if err != nil {
