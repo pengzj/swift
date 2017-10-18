@@ -11,13 +11,12 @@ import (
 )
 
 var (
-	heartbeatInterval = 5 * time.Second
+	heartbeatInterval = 10 * time.Second
 )
 
 type TcpSocket struct {
-	hub.Session
-	Conn *net.TCPConn
 	option *option.ConnectorOption
+	switcher chan bool
 }
 
 func (socket *TcpSocket) Start(host ,port string)  {
@@ -32,34 +31,38 @@ func (socket *TcpSocket) Start(host ,port string)  {
 	defer listener.Close()
 
 	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Fatal(err)
+		select {
+		case <- socket.switcher:
+			return
+		default:
+			conn, err := listener.Accept()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			session := &hub.Session{
+				Id: hub.UniqueId(),
+				Conn: conn,
+				Send: make(chan []byte),
+			}
+
+			hub.GetHub().Register <- session
+
+			go readPump(session)
+			go writePump(session)
 		}
-
-		session := new(TcpSocket)
-		session.Session = hub.Session{
-			Id: hub.UniqueId(),
-			Conn: conn,
-			Send: make(chan []byte),
-		}
-
-		hub.GetHub().Register <- session
-
-		go session.readPump()
-		go session.writePump()
 
 	}
 }
 
-func (socket *TcpSocket)readPump()  {
+func readPump(session *hub.Session)  {
 	var buffer bytes.Buffer
 	var headerLength = protocol.GetHeadLength()
 	var currentTotalLength int
 	var length int
 	for {
 		data := make([]byte, 1024)
-		n, err := socket.Conn.Read(data)
+		n, err := session.Conn.Read(data)
 		if err != nil {
 			log.Fatal("read data error: %v", err)
 			return
@@ -77,7 +80,7 @@ func (socket *TcpSocket)readPump()  {
 			if err != nil {
 				log.Fatalf("read data error: %v", err)
 			}
-			socket.HandleData(message)
+			session.HandleData(message)
 
 			leftLength := currentTotalLength - length
 			if leftLength > 0 {
@@ -93,26 +96,26 @@ func (socket *TcpSocket)readPump()  {
 	}
 }
 
-func (socket *TcpSocket) writePump()  {
+func writePump(session *hub.Session)  {
 	ticker := time.NewTicker(heartbeatInterval)
 	defer func() {
 		ticker.Stop()
-		socket.Close()
+		session.Close()
 	}()
 
 	for {
 		select {
-		case message := <-socket.Send:
-			socket.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
+		case message := <-session.Send:
+			session.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
 
-			_, err := socket.Conn.Write(message)
+			_, err := session.Conn.Write(message)
 			if err != nil {
    				return
 			}
 
 		case <-ticker.C:
-			socket.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
-			_, err := socket.Conn.Write(protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
+			session.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
+			_, err := session.Conn.Write(protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
 			if err != nil {
 				log.Fatal(err)
 				return
@@ -124,4 +127,8 @@ func (socket *TcpSocket) writePump()  {
 
 func (socket *TcpSocket) SetOption(option *option.ConnectorOption)  {
 	socket.option = option
+}
+
+func (socket *TcpSocket) Close()  {
+	socket.switcher <- false
 }

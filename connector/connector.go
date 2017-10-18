@@ -3,17 +3,13 @@ package connector
 import (
 	"../hub"
 	"./tcp"
-	"./udp"
 	"./option"
 )
 
 type Socket interface {
 	Start(host string, port string)
-	Write([]byte)
 	Close()
 	SetOption(*option.ConnectorOption)
-	readPump()
-	writePump()
 }
 
 
@@ -31,10 +27,6 @@ func (connector *Connector) Start(connType, host, port string)  {
 	switch connType {
 	case "tcp":
 		connector.socket = new(tcp.TcpSocket)
-		break;
-	case "udp":
-		connector.socket = new(udp.UdpSocket)
-		break;
 	}
 
 	if connector.option != nil {

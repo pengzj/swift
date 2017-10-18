@@ -31,27 +31,35 @@ func (app *Application) loadDefaultConfig()  {
 
 	var filePath string
 
-	var server *server.Server
+	var s *server.Server
 
 	filePath = filepath.Join(app.configPath, "master.json")
 	in, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = json.Unmarshal(in, server)
+	err = json.Unmarshal(in, s)
 	if err != nil {
 		log.Fatal(err)
 	}
-	server.Type = SERVER_MASTER
-	server.IsMaster = true
-	server.Frontend = false
+	s.Type = SERVER_MASTER
+	s.IsMaster = true
+	s.Frontend = false
 
 
-	internalServers = append(internalServers, server)
+	internalServers = append(internalServers, internal.Server{
+		Type:s.Type,
+		Id:s.Id,
+		ClientHost:s.ClientHost,
+		ClientPort:s.ClientPort,
+		Host:s.Host,
+		Port:s.Port,
+		Frontend:s.Frontend,
+	})
 
 
 	if serverType == SERVER_MASTER {
-		app.server = server
+		app.server = s
 	}
 
 	filePath = filepath.Join(app.configPath, "servers.json")

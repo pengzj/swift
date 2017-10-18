@@ -33,8 +33,6 @@ type Session struct {
 	Send chan []byte
 	handlerMap map[string]func()
 
-	MessageId int
-
 	userData map[string]interface{}
 }
 
