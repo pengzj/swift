@@ -3,7 +3,6 @@ package swift
 import (
 	"./server"
 	"./connector/option"
-	"./internal"
 	"./hub"
 )
 
@@ -23,8 +22,6 @@ type Application struct {
 	connectorOptions map[string]*option.ConnectorOption
 	server *server.Server
 }
-
-
 
 func (app *Application) SetConfigPath(path string)  {
 	app.configPath = path
@@ -48,12 +45,16 @@ func (app *Application) Run()  {
 	app.startServers()
 }
 
-func (app *Application) HandleFunc(name string, handler func(interface{}, []byte) []byte)  {
-	internal.HandleFunc(name, handler)
+func (app *Application) HandleFunc(name string, handler func(*hub.Session, []byte) []byte)  {
+	hub.HandleFunc(name, handler)
+}
+
+func (app *Application) RegisterHandler(name string)  {
+	hub.RegisterHandle(name)
 }
 
 func (app *Application) Route(serverType string, handler func(session *hub.Session)string) {
-	hub.GetHub().Route(serverType, handler)
+	hub.Route(serverType, handler)
 }
 
 

@@ -2,86 +2,25 @@ package internal
 
 import (
 	"google.golang.org/grpc"
-	"encoding/json"
 	"log"
-	"errors"
 )
-
-type Internal struct {
-	handlerMap map[string]func(interface{}, []byte)[]byte
-	handlerList []string
-	rpcClientMap map[string]*grpc.ClientConn
-
-	serverMap map[string]Server
-}
 
 type Server struct {
 	Type string
 	Id string
-	ClientHost string
-	ClientPort string
 	Host string
 	Port string
-	Frontend bool
+}
+
+type Internal struct {
+	rpcClientMap map[string]*grpc.ClientConn
+	serverMap map[string]Server
 }
 
 
 var std *Internal
 
 
-func HandleFunc(name string, handler func(interface{}, []byte) []byte)  {
-	if std.handlerMap[name] != nil {
-		panic("func " + name + " register twice")
-	}
-	std.handlerMap[name] = handler
-	std.handlerList = append(std.handlerList, name)
-}
-
-func GetHandler(handleId int) (func(interface{}, []byte) []byte, error) {
-	if len(std.handlerList) <= handleId {
-		return nil, errors.New("handler exist")
-	}
-	name := std.handlerList[handleId]
-	return std.handlerMap[name], nil
-}
-
-func GetHandlerId(name string) (int, error)  {
-	var handerId = 0
-	for id, val :=range std.handlerList {
-		if name == val {
-			handerId = id
-			break
-		}
-	}
-	if handerId == 0 {
-		return  0, errors.New("no found handle")
-	}
-	return handerId, nil
-}
-
-func GetRoutes() []byte {
-	var data []byte
-	type route struct{
-		Id int
-		Name string
-	}
-	var routes []route
-	for id, name :=range std.handlerList {
-		routes = append(routes, route{
-			Id:id,
-			Name:name,
-		})
-	}
-	data, err := json.Marshal(routes)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return data
-}
-
-func NotFound() []byte {
-	return std.handlerMap["notFound"](nil, []byte{})
-}
 
 func PutServers(servers []Server)  {
 	for _, server :=range servers {
@@ -130,17 +69,6 @@ func GetClientConnByServerId(serverId string) *grpc.ClientConn  {
 
 func init() {
 	std = new(Internal)
-
-	std.handlerMap["notFound"] = func(interface{}, []byte) []byte {
-		var body = struct {
-			Code int
-			Message string
-		}{
-			Code: 404,
-			Message:"method not exists",
-		}
-		data, _ := json.Marshal(body)
-		return data
-	}
-	std.handlerList[0] = "notFound"
+	std.serverMap = map[string]Server{}
+	std.rpcClientMap = map[string]*grpc.ClientConn{}
 }

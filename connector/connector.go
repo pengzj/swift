@@ -9,7 +9,6 @@ import (
 type Socket interface {
 	Start(host string, port string)
 	Close()
-	SetOption(*option.ConnectorOption)
 }
 
 
@@ -26,12 +25,11 @@ func (connector *Connector) SetOption(option *option.ConnectorOption)  {
 func (connector *Connector) Start(connType, host, port string)  {
 	switch connType {
 	case "tcp":
-		connector.socket = new(tcp.TcpSocket)
+		connector.socket = &tcp.TcpSocket{
+			CloseChan:make(chan bool),
+		}
 	}
 
-	if connector.option != nil {
-		connector.socket.SetOption(connector.option)
-	}
 
 	go hub.GetHub().Run()
 

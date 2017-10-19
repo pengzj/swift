@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"io/ioutil"
 	"log"
+	"./internal"
 	"./server"
 	"encoding/json"
-	"./internal"
 )
 
 func (app *Application) init()  {
@@ -27,18 +27,15 @@ func (app *Application) loadDefaultConfig()  {
 
 	var internalServers []internal.Server
 
-
-
 	var filePath string
-
-	var s *server.Server
+	var  s *server.Server
 
 	filePath = filepath.Join(app.configPath, "master.json")
 	in, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = json.Unmarshal(in, s)
+	err = json.Unmarshal(in, &s)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,15 +45,11 @@ func (app *Application) loadDefaultConfig()  {
 
 
 	internalServers = append(internalServers, internal.Server{
-		Type:s.Type,
-		Id:s.Id,
-		ClientHost:s.ClientHost,
-		ClientPort:s.ClientPort,
+		Type: s.Type,
+		Id: s.Id,
 		Host:s.Host,
 		Port:s.Port,
-		Frontend:s.Frontend,
 	})
-
 
 	if serverType == SERVER_MASTER {
 		app.server = s
@@ -68,7 +61,7 @@ func (app *Application) loadDefaultConfig()  {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = json.Unmarshal(in, servers)
+	err = json.Unmarshal(in, &servers)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,15 +71,14 @@ func (app *Application) loadDefaultConfig()  {
 		if s.Id == serverId {
 			app.server = s
 		}
+
 		internalServers = append(internalServers, internal.Server{
-			Type:s.Type,
-			Id:s.Id,
-			ClientHost:s.ClientHost,
-			ClientPort:s.ClientPort,
+			Type: s.Type,
+			Id: s.Id,
 			Host:s.Host,
 			Port:s.Port,
-			Frontend:s.Frontend,
 		})
+
 	}
 
 

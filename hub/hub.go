@@ -2,6 +2,7 @@ package hub
 
 import (
 	"sync"
+	"encoding/json"
 )
 
 type Hub struct {
@@ -11,7 +12,6 @@ type Hub struct {
 	Broadcast chan []byte
 	mu sync.Mutex
 
-	routeMap map[string]func(*Session)string
 }
 
 func NewHub() *Hub {
@@ -44,14 +44,6 @@ func (hub *Hub) Run()  {
 	}
 }
 
-func (hub *Hub) Route(serverType string,  handler func(session *Session) string)  {
-	hub.routeMap[serverType] = handler
-}
-
-func (hub *Hub) GetRouteHandle(serverType string) func(*Session)string  {
-	return hub.routeMap[serverType]
-}
-
 func (hub *Hub)GetSessionById(id string) *Session {
 	hub.mu.Lock()
 	defer hub.mu.Unlock()
@@ -77,4 +69,24 @@ func init() {
 		Unregister:make(chan *Session),
 		Broadcast: make(chan []byte),
 	}
+
+	inter = new(interEntity)
+	inter.handlerList = []string{}
+	inter.handlerMap = map[string]func(*Session, []byte) []byte {}
+	inter.routeMap = map[string]func(*Session)string{}
+
+
+	handler := func(*Session, []byte) []byte {
+		var body = struct {
+			Code int
+			Message string
+		}{
+			Code: 404,
+			Message:"method not exists",
+		}
+		data, _ := json.Marshal(body)
+		return data
+	}
+
+	HandleFunc("notFound", handler)
 }

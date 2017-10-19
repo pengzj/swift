@@ -7,9 +7,9 @@ import (
 	"crypto/rand"
 	"log"
 	"../protocol"
-	"../internal"
 	"google.golang.org/grpc"
 	"hash/crc32"
+	"../internal"
 )
 
 
@@ -54,30 +54,26 @@ func (session *Session) HandleData(data []byte)  {
 	packageType, body := protocol.Decode(data)
 	switch packageType {
 	case protocol.TYPE_HANDSHAKE:
-		data = internal.GetRoutes()
+		data = GetHandlers()
 		message := protocol.MessageEncode(0, 0, data)
 		session.Write(protocol.Encode(protocol.TYPE_HANDSHAKE_ACK, message))
 		return
-	case protocol.TYPE_HEARTBEAT:
-		return
 	case protocol.TYPE_DATA_NOTIFY:
 		_, routeId, body := protocol.MessageDecode(body)
-		handler, err := internal.GetHandler(routeId)
+		handler, err := GetHandler(routeId)
 		if err == nil {
 			_ = handler(session, body)
 		}
-		return
 	case protocol.TYPE_DATA_REQUEST:
-		requestId, routeId, body := protocol.MessageDecode(body)
-		handler, err := internal.GetHandler(routeId)
+		requestId, routeId, in := protocol.MessageDecode(body)
+		handler, err := GetHandler(routeId)
 		var data []byte
 		if err != nil {
-			data = internal.NotFound()
+			data = NotFound()
 		} else {
-			data = handler(session, body)
+			data = handler(session, in)
 		}
 		session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, protocol.MessageEncode(requestId, routeId, data)))
-		return
 	}
 }
 
@@ -93,7 +89,7 @@ func (session *Session) Write(data []byte)  {
 }
 
 func (session *Session) Push(route string, data []byte)  {
-	handlerId, err := internal.GetHandlerId(route)
+	handlerId, err := GetHandlerId(route)
 	if err != nil {
 		return
 	}
@@ -113,14 +109,13 @@ func (session *Session) Get(key string) interface{} {
 }
 
 func (session *Session) GetClientConn(serverType string) *grpc.ClientConn  {
-	handler := GetHub().GetRouteHandle(serverType)
+	handler := GetRouteHandle(serverType)
 	var serverId string
 	if handler == nil {
-		servers := internal.GetServersByType(serverType)
+		servers :=  internal.GetServersByType(serverType)
 		crc := crc32.ChecksumIEEE([]byte(session.Id))
 		idx := int(crc%uint32(len(servers)))
 		serverId = servers[idx].Id
-
 	} else {
 		serverId = handler(session)
 	}

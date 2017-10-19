@@ -3,7 +3,6 @@ package tcp
 import (
 	"net"
 	"log"
-	"../option"
 	"../../hub"
 	"bytes"
 	"../../protocol"
@@ -15,8 +14,7 @@ var (
 )
 
 type TcpSocket struct {
-	option *option.ConnectorOption
-	switcher chan bool
+	CloseChan chan bool
 }
 
 func (socket *TcpSocket) Start(host ,port string)  {
@@ -32,7 +30,7 @@ func (socket *TcpSocket) Start(host ,port string)  {
 
 	for {
 		select {
-		case <- socket.switcher:
+		case <- socket.CloseChan:
 			return
 		default:
 			conn, err := listener.Accept()
@@ -43,7 +41,7 @@ func (socket *TcpSocket) Start(host ,port string)  {
 			session := &hub.Session{
 				Id: hub.UniqueId(),
 				Conn: conn,
-				Send: make(chan []byte),
+				Send: make(chan []byte, 100),
 			}
 
 			hub.GetHub().Register <- session
@@ -64,7 +62,6 @@ func readPump(session *hub.Session)  {
 		data := make([]byte, 1024)
 		n, err := session.Conn.Read(data)
 		if err != nil {
-			log.Fatal("read data error: %v", err)
 			return
 		}
 		buf := make([]byte, n)
@@ -91,6 +88,8 @@ func readPump(session *hub.Session)  {
 				}
 				buffer.Reset()
 				buffer.Write(leftData)
+			} else {
+				buffer.Reset()
 			}
 		}
 	}
@@ -113,11 +112,18 @@ func writePump(session *hub.Session)  {
    				return
 			}
 
+			n := len(session.Send)
+			for i := 0; i < n; i++ {
+				_, err = session.Conn.Write(<-session.Send)
+				if err != nil {
+					return
+				}
+			}
+
 		case <-ticker.C:
 			session.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
 			_, err := session.Conn.Write(protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
 			if err != nil {
-				log.Fatal(err)
 				return
 			}
 		}
@@ -125,10 +131,6 @@ func writePump(session *hub.Session)  {
 }
 
 
-func (socket *TcpSocket) SetOption(option *option.ConnectorOption)  {
-	socket.option = option
-}
-
 func (socket *TcpSocket) Close()  {
-	socket.switcher <- false
+	socket.CloseChan <- true
 }

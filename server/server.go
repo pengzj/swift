@@ -8,8 +8,9 @@ import (
 
 type Server struct {
 	Type string `json:"type"`
+	ConnType string `json:"connType"`
 	Id string `json:"id"`
-	ClientHost string `json:"clienthost,omitempty"`
+	ClientHost string `json:"clientHost,omitempty"`
 	ClientPort string `json:"clientPort,omitempty"`
 	Host string `json:"host"`
 	Port string `json:"port"`
@@ -31,7 +32,7 @@ func (server *Server) Start(option *option.ConnectorOption)  {
 func (server *Server) startServer(option *option.ConnectorOption)  {
 	server.Connector = new(connector.Connector)
 	server.Connector.SetOption(option)
-	server.Connector.Start(server.Type, server.ClientHost, server.Port)
+	server.Connector.Start(server.ConnType, server.ClientHost, server.ClientPort)
 }
 
 func (server *Server) startRpcServer()  {

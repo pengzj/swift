@@ -31,15 +31,15 @@ func (s *Service) OnlineStatistics(ctx context.Context, in *pb.OnlineRequest) (*
 		return nil, errors.New("server not exist")
 	}
 	var reply *pb.OnlineReply
-	for _, server := range servers {
-		conn := internal.GetClientConnByServerId(server.Id)
+	for _, s := range servers {
+		conn := internal.GetClientConnByServerId(s.Id)
 		c := pb.NewOnlineClient(conn)
 
 		r, err := c.InterOnline(context.Background(), &pb.InterOnlineRequest{})
 		if err != nil {
 			log.Fatal(err)
 		}
-		reply.Servers = append(reply.Servers, &pb.OnlineReply_Online{Id:server.Id, Count:r.Count,})
+		reply.Servers = append(reply.Servers, &pb.OnlineReply_Online{Id:s.Id, Count:r.Count,})
 		reply.Total = reply.Total + r.Count
 	}
 	return reply, nil

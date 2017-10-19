@@ -81,7 +81,7 @@ func Encode(packageType int, body []byte) []byte {
 func Decode(data []byte) (packageType int, body []byte) {
 	packageType = int(data[0])
 	length := GetBodyLength(data)
-	body = data[4:length]
+	body = data[4:(4+length)]
 
 	return
 }
