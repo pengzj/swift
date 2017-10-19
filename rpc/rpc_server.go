@@ -30,6 +30,8 @@ func (rcpServer *RpcServer)Start(host, port string)  {
 		log.Fatal(err)
 	}
 
+	loadServer()
+
 	reflection.Register(std.Server)
 	if err := std.Server.Serve(listener); err != nil {
 		log.Fatal(err)

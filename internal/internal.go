@@ -30,7 +30,7 @@ func PutServers(servers []Server)  {
 
 
 func GetServersByType(serverType string) []Server {
-	var servers []Server
+	var servers []Server = make([]Server,0)
 	for _, server :=range std.serverMap {
 		if server.Type == serverType {
 			servers = append(servers, server)

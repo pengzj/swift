@@ -33,7 +33,7 @@ func (connector *Connector) Start(connType, host, port string)  {
 
 	go hub.GetHub().Run()
 
-	connector.socket.Start(host, port)
+	go connector.socket.Start(host, port)
 }
 
 func (connector *Connector) Close()  {

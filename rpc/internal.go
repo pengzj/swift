@@ -2,11 +2,11 @@ package rpc
 
 import (
 	"errors"
-	"log"
 	"../pb"
 	"context"
 	"../hub"
 	"../internal"
+	"log"
 )
 
 type Service struct {
@@ -20,17 +20,15 @@ func (server *Service) InterOnline(ctx context.Context, in *pb.InterOnlineReques
 	return reply, nil
 }
 
-func LoadServer()  {
-	pb.RegisterOnlineServer(std.Server, &Service{})
-}
-
 func (s *Service) OnlineStatistics(ctx context.Context, in *pb.OnlineRequest) (*pb.OnlineReply, error) {
 	serverType := in.Type
 	servers := internal.GetServersByType(serverType)
-	if servers == nil {
+	if len(servers) == 0 {
 		return nil, errors.New("server not exist")
 	}
-	var reply *pb.OnlineReply
+	var reply *pb.OnlineReply = &pb.OnlineReply{
+		Total:0,
+	}
 	for _, s := range servers {
 		conn := internal.GetClientConnByServerId(s.Id)
 		c := pb.NewOnlineClient(conn)
@@ -45,6 +43,8 @@ func (s *Service) OnlineStatistics(ctx context.Context, in *pb.OnlineRequest) (*
 	return reply, nil
 }
 
-func LoadMaster()  {
-	pb.RegisterOnlineServer(std.Server,&Service{})
+
+
+func loadServer()  {
+	pb.RegisterOnlineServer(std.Server, &Service{})
 }

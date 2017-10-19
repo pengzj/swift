@@ -38,12 +38,6 @@ func (server *Server) startServer(option *option.ConnectorOption)  {
 func (server *Server) startRpcServer()  {
 	server.rpcServer = rpc.GetServer()
 
-	if server.IsMaster == true {
-		rpc.LoadMaster()
-	} else {
-		rpc.LoadServer()
-	}
-
 	server.rpcServer.Start(server.Host, server.Port)
 }
 
