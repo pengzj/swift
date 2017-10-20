@@ -8,6 +8,7 @@ import (
 	"./internal"
 	"./server"
 	"encoding/json"
+	"os"
 )
 
 func (app *Application) init()  {
@@ -89,6 +90,16 @@ func (app *Application) loadDefaultConfig()  {
 		log.Fatal(serverId + " not  exists")
 	}
 
+	certPath := filepath.Join(app.configPath, "cert.pem")
+	keyPath := filepath.Join(app.configPath, "key.pem")
+	if _, err = os.Stat(certPath); os.IsNotExist(err) {
+		log.Fatal(certPath + "not exist")
+	}
+
+	if _, err = os.Stat(keyPath); os.IsNotExist(err) {
+		log.Fatal(keyPath + "not exist")
+	}
+	internal.SetCert(certPath, keyPath)
 
 	internal.PutServers(internalServers)
 }

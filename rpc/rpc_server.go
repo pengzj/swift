@@ -5,6 +5,8 @@ import (
 	"log"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"../internal"
 )
 
 type RpcServer struct {
@@ -29,6 +31,11 @@ func (rcpServer *RpcServer)Start(host, port string)  {
 	if err != nil {
 		log.Fatal(err)
 	}
+	credential , err := credentials.NewServerTLSFromFile(internal.GetCertFile(), internal.GetCertKeyFile())
+	if err != nil {
+		log.Fatal(err)
+	}
+	std.Server = grpc.NewServer(grpc.Creds(credential))
 
 	loadServer()
 
@@ -44,5 +51,4 @@ func (rpcServer *RpcServer) Close()  {
 
 func init() {
 	std = new(RpcServer)
-	std.Server = grpc.NewServer()
 }

@@ -3,6 +3,7 @@ package internal
 import (
 	"google.golang.org/grpc"
 	"log"
+	"google.golang.org/grpc/credentials"
 )
 
 type Server struct {
@@ -15,6 +16,9 @@ type Server struct {
 type Internal struct {
 	rpcClientMap map[string]*grpc.ClientConn
 	serverMap map[string]Server
+
+	certPath string
+	keyPath string
 }
 
 
@@ -47,8 +51,25 @@ func SetClientConn(serverId string, clientConn *grpc.ClientConn)  {
 	std.rpcClientMap[serverId] = clientConn
 }
 
+func SetCert(cert, key string)  {
+	std.certPath = cert
+	std.keyPath = key
+}
+
+func GetCertKeyFile() string {
+	return std.keyPath
+}
+
+func GetCertFile() string {
+	return std.certPath
+}
+
 func loadClientConnByServer(server Server)  {
-	conn, err := grpc.Dial(server.Host + ":" +server.Port, grpc.WithInsecure())
+	credential , err := credentials.NewClientTLSFromFile(std.certPath, "")
+	if err != nil {
+		log.Fatal(err)
+	}
+	conn, err := grpc.Dial(server.Host + ":" +server.Port, grpc.WithTransportCredentials(credential))
 	if err != nil {
 		log.Fatal(err)
 	}

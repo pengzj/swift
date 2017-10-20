@@ -10,8 +10,6 @@ import (
 	"google.golang.org/grpc"
 	"hash/crc32"
 	"../internal"
-	"fmt"
-	"time"
 )
 
 
@@ -54,7 +52,6 @@ func (session *Session) Trigger(name string)  {
 
 func (session *Session) HandleData(data []byte)  {
 	packageType, body := protocol.Decode(data)
-	fmt.Println(packageType, string(body), time.Now())
 	switch packageType {
 	case protocol.TYPE_HANDSHAKE:
 		data = GetHandlers()
@@ -71,13 +68,11 @@ func (session *Session) HandleData(data []byte)  {
 		requestId, routeId, in := protocol.MessageDecode(body)
 		handler, err := GetHandler(routeId)
 		var data []byte
-		fmt.Println("recieve request ", time.Now())
 		if err != nil {
 			data = NotFound()
 		} else {
 			data = handler(session, in)
 		}
-		fmt.Println("recieve resposne ", time.Now())
 		session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, protocol.MessageEncode(requestId, routeId, data)))
 	}
 }
