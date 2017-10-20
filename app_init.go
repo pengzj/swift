@@ -51,8 +51,12 @@ func (app *Application) loadDefaultConfig()  {
 		Port:s.Port,
 	})
 
+	isExist := false
+
 	if serverType == SERVER_MASTER {
 		app.server = s
+
+		isExist = true
 	}
 
 	filePath = filepath.Join(app.configPath, "servers.json")
@@ -66,10 +70,10 @@ func (app *Application) loadDefaultConfig()  {
 		log.Fatal(err)
 	}
 
-
 	for _, s :=range servers {
 		if s.Id == serverId {
 			app.server = s
+			isExist = true
 		}
 
 		internalServers = append(internalServers, internal.Server{
@@ -79,6 +83,10 @@ func (app *Application) loadDefaultConfig()  {
 			Port:s.Port,
 		})
 
+	}
+
+	if isExist == false {
+		log.Fatal(serverId + " not  exists")
 	}
 
 

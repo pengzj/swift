@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"../../protocol"
 	"time"
+	"math"
 )
 
 var (
@@ -41,7 +42,7 @@ func (socket *TcpSocket) Start(host ,port string)  {
 			session := &hub.Session{
 				Id: hub.UniqueId(),
 				Conn: conn,
-				Send: make(chan []byte, 100),
+				Send: make(chan []byte, 10),
 			}
 
 			hub.GetHub().Register <- session
@@ -59,7 +60,7 @@ func readPump(session *hub.Session)  {
 	var currentTotalLength int
 	var length int
 	for {
-		data := make([]byte, 1024)
+		data := make([]byte, math.MaxUint16)
 		n, err := session.Conn.Read(data)
 		if err != nil {
 			return
@@ -69,14 +70,22 @@ func readPump(session *hub.Session)  {
 
 		buffer.Write(buf)
 
-		currentTotalLength = len(buffer.Bytes())
-		length = headerLength +  protocol.GetBodyLength(buffer.Bytes())
-		message := make([]byte, length)
-		if length <= currentTotalLength {
+
+		//do with packet splicing
+		for {
+			currentTotalLength = len(buffer.Bytes())
+			length = headerLength +  protocol.GetBodyLength(buffer.Bytes())
+			message := make([]byte, length)
+
+			if length > currentTotalLength {
+				break
+			}
+
 			_, err = buffer.Read(message)
 			if err != nil {
 				log.Fatalf("read data error: %v", err)
 			}
+
 			session.HandleData(message)
 
 			leftLength := currentTotalLength - length
@@ -90,6 +99,7 @@ func readPump(session *hub.Session)  {
 				buffer.Write(leftData)
 			} else {
 				buffer.Reset()
+				break
 			}
 		}
 	}
@@ -97,29 +107,24 @@ func readPump(session *hub.Session)  {
 
 func writePump(session *hub.Session)  {
 	ticker := time.NewTicker(heartbeatInterval)
-	defer func() {
-		ticker.Stop()
-		session.Close()
-	}()
-
+	defer ticker.Stop()
+	var buffer bytes.Buffer
 	for {
 		select {
 		case message := <-session.Send:
-			session.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
+			buffer.Write(message)
+			n := len(session.Send)
 
-			_, err := session.Conn.Write(message)
+			for i := 0; i < n; i++ {
+				buffer.Write(<-session.Send)
+			}
+
+			session.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
+			_, err := session.Conn.Write(buffer.Bytes())
 			if err != nil {
    				return
 			}
-
-			n := len(session.Send)
-			for i := 0; i < n; i++ {
-				_, err = session.Conn.Write(<-session.Send)
-				if err != nil {
-					return
-				}
-			}
-
+			buffer.Reset()
 		case <-ticker.C:
 			session.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
 			_, err := session.Conn.Write(protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
