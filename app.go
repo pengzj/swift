@@ -4,6 +4,8 @@ import (
 	"./server"
 	"./connector/option"
 	"./hub"
+	"./db"
+	"database/sql"
 )
 
 type EnumState uint8
@@ -55,6 +57,14 @@ func (app *Application) RegisterHandler(name string)  {
 
 func (app *Application) Route(serverType string, handler func(session *hub.Session)string) {
 	hub.Route(serverType, handler)
+}
+
+func (app *Application) RegisterDB(name, dbType, dsn string)  {
+	db.Register(name,dbType,dsn)
+}
+
+func (app *Application) GetDB(name string) *sql.DB {
+	return db.Get(name)
 }
 
 
