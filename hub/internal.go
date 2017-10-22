@@ -43,9 +43,7 @@ func GetHandlerId(name string) (int, error)  {
 			break
 		}
 	}
-	if handlerId == 0 {
-	//	return  0, errors.New("no found handle")
-	}
+
 	return handlerId, nil
 }
 

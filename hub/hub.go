@@ -9,7 +9,7 @@ type Hub struct {
 	Sessions map[string]*Session
 	Register chan *Session
 	Unregister chan *Session
-	Broadcast chan []byte
+	Closed chan bool
 	mu sync.Mutex
 
 }
@@ -19,7 +19,7 @@ func NewHub() *Hub {
 		Sessions: make(map[string]*Session),
 		Register: make(chan *Session),
 		Unregister:make(chan *Session),
-		Broadcast: make(chan []byte),
+		Closed: make(chan bool),
 	}
 }
 
@@ -36,12 +36,24 @@ func (hub *Hub) Run()  {
 			hub.mu.Lock()
 			delete(hub.Sessions, session.Id)
 			hub.mu.Unlock()
-		case message := <- hub.Broadcast:
-			for _, session := range hub.Sessions {
-				session.Write(message)
-			}
+		case  <- hub.Closed:
+			return
 		}
 	}
+}
+
+func (hub *Hub) Stop()  {
+	hub.mu.Lock()
+	defer hub.mu.Unlock()
+
+	for _, session :=range hub.Sessions {
+		session.Close()
+		delete(hub.Sessions, session.Id)
+	}
+
+
+	hub.Closed <- true
+
 }
 
 func (hub *Hub)GetSessionById(id string) *Session {
@@ -63,12 +75,7 @@ func GetHub()  *Hub {
 }
 
 func init() {
-	std = &Hub{
-		Sessions: make(map[string]*Session),
-		Register: make(chan *Session),
-		Unregister:make(chan *Session),
-		Broadcast: make(chan []byte),
-	}
+	std = NewHub()
 
 	inter = new(interEntity)
 	inter.handlerList = []string{}

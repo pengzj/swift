@@ -29,8 +29,7 @@ func main()  {
 **include files**:  
 |-- master.json  
 |-- servers.json  
-|-- cert.pem  
-|-- key.pem  
+|-- secret.key 
 
 master.json
 ```
@@ -48,10 +47,14 @@ servers.json
   {"type": "rank", "id": "rank-server-1","host": "127.0.0.1", "port": "3403", "frontend": false}
 ]
 ````
-
+secret.key
+````
+asdfkksad$sadfk
+````
 
 # to do list
  
+handler interceptor  
 data  async  to db  
 optimize internal interface  
 log  

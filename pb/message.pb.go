@@ -12,6 +12,10 @@ It has these top-level messages:
 	OnlineReply
 	InterOnlineRequest
 	InterOnlineReply
+	OfflineRequest
+	OfflineReply
+	InterOfflineRequest
+	InterOfflineReply
 */
 package pb
 
@@ -125,12 +129,48 @@ func (m *InterOnlineReply) GetCount() uint32 {
 	return 0
 }
 
+type OfflineRequest struct {
+}
+
+func (m *OfflineRequest) Reset()                    { *m = OfflineRequest{} }
+func (m *OfflineRequest) String() string            { return proto.CompactTextString(m) }
+func (*OfflineRequest) ProtoMessage()               {}
+func (*OfflineRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+
+type OfflineReply struct {
+}
+
+func (m *OfflineReply) Reset()                    { *m = OfflineReply{} }
+func (m *OfflineReply) String() string            { return proto.CompactTextString(m) }
+func (*OfflineReply) ProtoMessage()               {}
+func (*OfflineReply) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+type InterOfflineRequest struct {
+}
+
+func (m *InterOfflineRequest) Reset()                    { *m = InterOfflineRequest{} }
+func (m *InterOfflineRequest) String() string            { return proto.CompactTextString(m) }
+func (*InterOfflineRequest) ProtoMessage()               {}
+func (*InterOfflineRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+
+type InterOfflineReply struct {
+}
+
+func (m *InterOfflineReply) Reset()                    { *m = InterOfflineReply{} }
+func (m *InterOfflineReply) String() string            { return proto.CompactTextString(m) }
+func (*InterOfflineReply) ProtoMessage()               {}
+func (*InterOfflineReply) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+
 func init() {
 	proto.RegisterType((*OnlineRequest)(nil), "pb.OnlineRequest")
 	proto.RegisterType((*OnlineReply)(nil), "pb.OnlineReply")
 	proto.RegisterType((*OnlineReply_Online)(nil), "pb.OnlineReply.Online")
 	proto.RegisterType((*InterOnlineRequest)(nil), "pb.InterOnlineRequest")
 	proto.RegisterType((*InterOnlineReply)(nil), "pb.InterOnlineReply")
+	proto.RegisterType((*OfflineRequest)(nil), "pb.OfflineRequest")
+	proto.RegisterType((*OfflineReply)(nil), "pb.OfflineReply")
+	proto.RegisterType((*InterOfflineRequest)(nil), "pb.InterOfflineRequest")
+	proto.RegisterType((*InterOfflineReply)(nil), "pb.InterOfflineReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -141,97 +181,163 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for Online service
+// Client API for Service service
 
-type OnlineClient interface {
+type ServiceClient interface {
 	OnlineStatistics(ctx context.Context, in *OnlineRequest, opts ...grpc.CallOption) (*OnlineReply, error)
 	InterOnline(ctx context.Context, in *InterOnlineRequest, opts ...grpc.CallOption) (*InterOnlineReply, error)
+	Offline(ctx context.Context, in *OfflineRequest, opts ...grpc.CallOption) (*OfflineReply, error)
+	InterOffline(ctx context.Context, in *InterOfflineRequest, opts ...grpc.CallOption) (*InterOfflineReply, error)
 }
 
-type onlineClient struct {
+type serviceClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewOnlineClient(cc *grpc.ClientConn) OnlineClient {
-	return &onlineClient{cc}
+func NewServiceClient(cc *grpc.ClientConn) ServiceClient {
+	return &serviceClient{cc}
 }
 
-func (c *onlineClient) OnlineStatistics(ctx context.Context, in *OnlineRequest, opts ...grpc.CallOption) (*OnlineReply, error) {
+func (c *serviceClient) OnlineStatistics(ctx context.Context, in *OnlineRequest, opts ...grpc.CallOption) (*OnlineReply, error) {
 	out := new(OnlineReply)
-	err := grpc.Invoke(ctx, "/pb.Online/OnlineStatistics", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/pb.Service/OnlineStatistics", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *onlineClient) InterOnline(ctx context.Context, in *InterOnlineRequest, opts ...grpc.CallOption) (*InterOnlineReply, error) {
+func (c *serviceClient) InterOnline(ctx context.Context, in *InterOnlineRequest, opts ...grpc.CallOption) (*InterOnlineReply, error) {
 	out := new(InterOnlineReply)
-	err := grpc.Invoke(ctx, "/pb.Online/InterOnline", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/pb.Service/InterOnline", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for Online service
+func (c *serviceClient) Offline(ctx context.Context, in *OfflineRequest, opts ...grpc.CallOption) (*OfflineReply, error) {
+	out := new(OfflineReply)
+	err := grpc.Invoke(ctx, "/pb.Service/Offline", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
 
-type OnlineServer interface {
+func (c *serviceClient) InterOffline(ctx context.Context, in *InterOfflineRequest, opts ...grpc.CallOption) (*InterOfflineReply, error) {
+	out := new(InterOfflineReply)
+	err := grpc.Invoke(ctx, "/pb.Service/InterOffline", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Service service
+
+type ServiceServer interface {
 	OnlineStatistics(context.Context, *OnlineRequest) (*OnlineReply, error)
 	InterOnline(context.Context, *InterOnlineRequest) (*InterOnlineReply, error)
+	Offline(context.Context, *OfflineRequest) (*OfflineReply, error)
+	InterOffline(context.Context, *InterOfflineRequest) (*InterOfflineReply, error)
 }
 
-func RegisterOnlineServer(s *grpc.Server, srv OnlineServer) {
-	s.RegisterService(&_Online_serviceDesc, srv)
+func RegisterServiceServer(s *grpc.Server, srv ServiceServer) {
+	s.RegisterService(&_Service_serviceDesc, srv)
 }
 
-func _Online_OnlineStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Service_OnlineStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(OnlineRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OnlineServer).OnlineStatistics(ctx, in)
+		return srv.(ServiceServer).OnlineStatistics(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pb.Online/OnlineStatistics",
+		FullMethod: "/pb.Service/OnlineStatistics",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OnlineServer).OnlineStatistics(ctx, req.(*OnlineRequest))
+		return srv.(ServiceServer).OnlineStatistics(ctx, req.(*OnlineRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Online_InterOnline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Service_InterOnline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(InterOnlineRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OnlineServer).InterOnline(ctx, in)
+		return srv.(ServiceServer).InterOnline(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pb.Online/InterOnline",
+		FullMethod: "/pb.Service/InterOnline",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OnlineServer).InterOnline(ctx, req.(*InterOnlineRequest))
+		return srv.(ServiceServer).InterOnline(ctx, req.(*InterOnlineRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Online_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "pb.Online",
-	HandlerType: (*OnlineServer)(nil),
+func _Service_Offline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OfflineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).Offline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Service/Offline",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).Offline(ctx, req.(*OfflineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_InterOffline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InterOfflineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).InterOffline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Service/InterOffline",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).InterOffline(ctx, req.(*InterOfflineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Service_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "pb.Service",
+	HandlerType: (*ServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "OnlineStatistics",
-			Handler:    _Online_OnlineStatistics_Handler,
+			Handler:    _Service_OnlineStatistics_Handler,
 		},
 		{
 			MethodName: "InterOnline",
-			Handler:    _Online_InterOnline_Handler,
+			Handler:    _Service_InterOnline_Handler,
+		},
+		{
+			MethodName: "Offline",
+			Handler:    _Service_Offline_Handler,
+		},
+		{
+			MethodName: "InterOffline",
+			Handler:    _Service_InterOffline_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -241,20 +347,24 @@ var _Online_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("message.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 239 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x90, 0x41, 0x4b, 0xc4, 0x30,
-	0x10, 0x85, 0x4d, 0xd5, 0x15, 0xa7, 0x54, 0xd7, 0xa1, 0x48, 0xe9, 0xa9, 0xc4, 0x4b, 0x4f, 0x45,
-	0xd6, 0x8b, 0x17, 0x7f, 0x40, 0x4f, 0x42, 0xfd, 0x05, 0xed, 0xee, 0x20, 0x85, 0x9a, 0xc4, 0x64,
-	0x56, 0xd8, 0xa3, 0x07, 0xff, 0xb7, 0x6c, 0x6a, 0x96, 0xac, 0x7b, 0x9b, 0x19, 0xbe, 0x97, 0xf7,
-	0x5e, 0x20, 0xfb, 0x20, 0xe7, 0xfa, 0x77, 0x6a, 0x8c, 0xd5, 0xac, 0x31, 0x31, 0x83, 0x7c, 0x80,
-	0xec, 0x55, 0x4d, 0xa3, 0xa2, 0x8e, 0x3e, 0xb7, 0xe4, 0x18, 0x11, 0x2e, 0x78, 0x67, 0xa8, 0x10,
-	0x95, 0xa8, 0xaf, 0x3b, 0x3f, 0xcb, 0x1f, 0x01, 0x69, 0xa0, 0xcc, 0xb4, 0xc3, 0x47, 0xb8, 0x72,
-	0x64, 0xbf, 0xc8, 0xba, 0x42, 0x54, 0xe7, 0x75, 0xba, 0xba, 0x6f, 0xcc, 0xd0, 0x44, 0x44, 0x98,
-	0x03, 0x86, 0x39, 0x5c, 0xb2, 0xe6, 0x7e, 0x2a, 0x92, 0x4a, 0xd4, 0x59, 0x37, 0x2f, 0x65, 0x03,
-	0x8b, 0x19, 0xc4, 0x1b, 0x48, 0xda, 0xcd, 0x9f, 0x67, 0xd2, 0x6e, 0xf6, 0xfc, 0x5a, 0x6f, 0x15,
-	0x07, 0xde, 0x2f, 0x32, 0x07, 0x6c, 0x15, 0x93, 0x3d, 0x4a, 0x2c, 0x6b, 0x58, 0x1e, 0x5d, 0xf7,
-	0x09, 0x0f, 0x7a, 0x11, 0xe9, 0x57, 0xdf, 0xe2, 0x60, 0xf8, 0x0c, 0xcb, 0x79, 0x7a, 0xe3, 0x9e,
-	0x47, 0xc7, 0xe3, 0xda, 0xe1, 0x5d, 0xdc, 0xc2, 0xbf, 0x5d, 0xde, 0xfe, 0x2b, 0x26, 0xcf, 0xf0,
-	0x05, 0xd2, 0xc8, 0x0e, 0x7d, 0xf5, 0xd3, 0x54, 0x65, 0x7e, 0x72, 0xf7, 0xf2, 0x61, 0xe1, 0xff,
-	0xfe, 0xe9, 0x37, 0x00, 0x00, 0xff, 0xff, 0x60, 0xc7, 0x7a, 0x90, 0x8c, 0x01, 0x00, 0x00,
+	// 303 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x52, 0xcd, 0x4e, 0xf3, 0x30,
+	0x10, 0xfc, 0x9c, 0x0f, 0x5a, 0xb1, 0xfd, 0x21, 0xdd, 0xa6, 0x10, 0xe5, 0x14, 0x99, 0x4b, 0x4e,
+	0x11, 0x94, 0x0b, 0x17, 0x24, 0xae, 0x39, 0x55, 0x4a, 0x9f, 0x20, 0x49, 0x5d, 0x14, 0x29, 0x24,
+	0x26, 0x76, 0x2b, 0xe5, 0x01, 0x78, 0x66, 0xae, 0xa8, 0x76, 0x53, 0x6c, 0x72, 0xdb, 0x1d, 0xcf,
+	0xcc, 0xce, 0xae, 0x0c, 0xb3, 0x0f, 0x26, 0x44, 0xf6, 0xce, 0x62, 0xde, 0x36, 0xb2, 0x41, 0x87,
+	0xe7, 0xf4, 0x01, 0x66, 0x9b, 0xba, 0x2a, 0x6b, 0x96, 0xb2, 0xcf, 0x03, 0x13, 0x12, 0x11, 0xae,
+	0x64, 0xc7, 0x99, 0x4f, 0x42, 0x12, 0xdd, 0xa4, 0xaa, 0xa6, 0x5f, 0x04, 0x26, 0x3d, 0x8b, 0x57,
+	0x1d, 0x3e, 0xc2, 0x58, 0xb0, 0xf6, 0xc8, 0x5a, 0xe1, 0x93, 0xf0, 0x7f, 0x34, 0x59, 0xdf, 0xc5,
+	0x3c, 0x8f, 0x0d, 0x46, 0x5f, 0xf7, 0x34, 0xf4, 0xe0, 0x5a, 0x36, 0x32, 0xab, 0x7c, 0x27, 0x24,
+	0xd1, 0x2c, 0xd5, 0x4d, 0x10, 0xc3, 0x48, 0x13, 0x71, 0x0e, 0x4e, 0xb2, 0x3b, 0xcf, 0x74, 0x92,
+	0xdd, 0x89, 0x5f, 0x34, 0x87, 0x5a, 0xf6, 0x7c, 0xd5, 0x50, 0x0f, 0x30, 0xa9, 0x25, 0x6b, 0xad,
+	0xc4, 0x34, 0x02, 0xd7, 0x42, 0x4f, 0x09, 0x2f, 0x7a, 0x62, 0xea, 0x5d, 0x98, 0x6f, 0xf6, 0x7b,
+	0x53, 0x3b, 0x87, 0xe9, 0x05, 0xe1, 0x55, 0x47, 0x57, 0xb0, 0xd4, 0x5e, 0x36, 0x6d, 0x09, 0x0b,
+	0x1b, 0xe6, 0x55, 0xb7, 0xfe, 0x26, 0x30, 0xde, 0xb2, 0xf6, 0x58, 0x16, 0x0c, 0x5f, 0xc0, 0xd5,
+	0xe3, 0xb7, 0x32, 0x93, 0xa5, 0x90, 0x65, 0x21, 0x70, 0x61, 0x1e, 0x45, 0xf9, 0x04, 0xb7, 0x7f,
+	0xee, 0x44, 0xff, 0xe1, 0x2b, 0x4c, 0x8c, 0xf4, 0xa8, 0x2e, 0x39, 0x5c, 0x32, 0xf0, 0x06, 0xb8,
+	0x96, 0x3f, 0xc1, 0xf8, 0x1c, 0x0a, 0x51, 0x99, 0x5b, 0xc1, 0x03, 0xd7, 0xc2, 0xb4, 0xe4, 0x0d,
+	0xa6, 0xe6, 0x32, 0x78, 0xff, 0x6b, 0x6d, 0x8b, 0x57, 0xc3, 0x07, 0xe5, 0x90, 0x8f, 0xd4, 0xff,
+	0x79, 0xfe, 0x09, 0x00, 0x00, 0xff, 0xff, 0x1b, 0x65, 0x3f, 0x44, 0x50, 0x02, 0x00, 0x00,
 }

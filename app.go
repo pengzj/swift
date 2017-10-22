@@ -6,6 +6,7 @@ import (
 	"./hub"
 	"./db"
 	"database/sql"
+	"./rpc"
 )
 
 type EnumState uint8
@@ -62,6 +63,11 @@ func (app *Application) Route(serverType string, handler func(session *hub.Sessi
 func (app *Application) RegisterDB(name, dbType, dsn string)  {
 	db.Register(name,dbType,dsn)
 }
+
+func (app *Application) RegisterRPC(handler func())  {
+	rpc.RegisterRPC(handler)
+}
+
 
 func (app *Application) GetDB(name string) *sql.DB {
 	return db.Get(name)

@@ -24,8 +24,26 @@ message InterOnlineReply {
     uint32 count = 1;
 }
 
-service Online {
+message OfflineRequest {
+
+}
+
+message OfflineReply {
+
+}
+
+message InterOfflineRequest {
+
+}
+
+message InterOfflineReply {
+
+}
+
+service Service {
     rpc OnlineStatistics(OnlineRequest) returns (OnlineReply) {}
     rpc InterOnline(InterOnlineRequest) returns (InterOnlineReply) {}
+    rpc Offline(OfflineRequest) returns (OfflineReply) {}
+    rpc InterOffline(InterOfflineRequest) returns (InterOfflineReply) {}
 }
 
