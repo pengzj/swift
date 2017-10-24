@@ -54,10 +54,8 @@ asdfkksad$sadfk
 
 # to do list
  
-handler interceptor  
 data  async  to db  
 optimize internal interface  
-log  
 manage tool  
 cronjob  
 service    
