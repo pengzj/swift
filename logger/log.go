@@ -85,7 +85,7 @@ func (logger *Logger) SetFile(fileName string)  {
 	year, month, day := now.Date()
 	ymd := fmt.Sprintf("%04d%02d%02d", year, month, day)
 
-	fileName =   name + ymd + ext
+	fileName =   name + "." + ymd + ext
 	fileName = filepath.Join(dir, fileName)
 
 	fp, err := os.OpenFile(fileName, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0755)

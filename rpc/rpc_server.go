@@ -81,7 +81,7 @@ func (rcpServer *RpcServer)Start(host, port string)  {
 
 func RegisterRPC(handler func())  {
 	if rpcHandler != nil {
-		log.Fatal("rpc handle has register twice!")
+		panic("rpc handle has register twice!")
 	}
 	rpcHandler = handler
 }

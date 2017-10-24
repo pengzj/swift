@@ -48,6 +48,10 @@ func (app *Application) Run()  {
 	app.startServers()
 }
 
+func (app *Application) RegisterBeforeHandler(handler func(*hub.Session, string)error)  {
+	hub.RegisterBeforeHandler(handler)
+}
+
 func (app *Application) HandleFunc(name string, handler func(*hub.Session, []byte) []byte)  {
 	hub.HandleFunc(name, handler)
 }

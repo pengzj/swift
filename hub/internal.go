@@ -1,15 +1,20 @@
 package hub
 
 import (
-	"errors"
 	"encoding/json"
 	"log"
+	"errors"
+)
+
+var (
+	ERR_HANDLER_EXIST = errors.New("handler exists")
 )
 
 type interEntity struct {
 	handlerMap map[string]func(*Session, []byte)[]byte
 	handlerList []string
 	routeMap map[string]func(*Session)string
+	beforeHandler func(*Session, string)error
 }
 
 var inter *interEntity
@@ -27,12 +32,31 @@ func RegisterHandle(name string)  {
 }
 
 func GetHandler(handleId int) (func(*Session, []byte) []byte, error) {
-	if len(inter.handlerList) <= handleId {
-		return nil, errors.New("handler exist")
+	name, err := GetHandlerName(handleId)
+	if err != nil {
+		return nil, err
+	}
+	return inter.handlerMap[name], nil
+}
+
+func GetHandlerName(handlerId int) (string, error) {
+	if len(inter.handlerList) <= handlerId {
+		return "", ERR_HANDLER_EXIST
 	}
 	list := inter.handlerList
-	name := list[handleId]
-	return inter.handlerMap[name], nil
+	name := list[handlerId]
+	return name, nil
+}
+
+func RegisterBeforeHandler(handler func(*Session, string)error)  {
+	if inter.beforeHandler != nil {
+		log.Fatal("beforeHandler register twice")
+	}
+	inter.beforeHandler = handler
+}
+
+func GetBeforeHandler() func(*Session, string)error {
+	return inter.beforeHandler
 }
 
 func GetHandlerId(name string) (int, error)  {
@@ -51,7 +75,7 @@ func Route(serverType string,  handler func(session *Session) string)  {
 	inter.routeMap[serverType] = handler
 }
 
-func GetRouteHandle(serverType string) func(*Session)string  {
+func GetRouteHandler(serverType string) func(*Session)string  {
 	return inter.routeMap[serverType]
 }
 

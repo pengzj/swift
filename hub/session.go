@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"hash/crc32"
 	"../internal"
+	"time"
 )
 
 
@@ -66,14 +67,31 @@ func (session *Session) HandleData(data []byte)  {
 		}
 	case protocol.TYPE_DATA_REQUEST:
 		requestId, routeId, in := protocol.MessageDecode(body)
-		handler, err := GetHandler(routeId)
+		routeName, err := GetHandlerName(routeId)
+
 		var data []byte
 		if err != nil {
 			data = NotFound()
+			session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, protocol.MessageEncode(requestId, routeId, data)))
+
 		} else {
+			handler, _ := GetHandler(routeId)
+			beforeHandler := GetBeforeHandler()
+
+			if beforeHandler != nil {
+				if err = beforeHandler(session, routeName); err != nil {
+					session.Write(protocol.Encode(protocol.TYPE_KICK, []byte(err.Error())))
+					//wait until the last message  is sent
+					time.AfterFunc(50 * time.Millisecond, func() {
+						session.Close()
+					})
+					return
+				}
+			}
+
 			data = handler(session, in)
+			session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, protocol.MessageEncode(requestId, routeId, data)))
 		}
-		session.Write(protocol.Encode(protocol.TYPE_DATA_RESPONSE, protocol.MessageEncode(requestId, routeId, data)))
 	}
 }
 
@@ -109,7 +127,7 @@ func (session *Session) Get(key string) interface{} {
 }
 
 func (session *Session) GetClientConn(serverType string) *grpc.ClientConn  {
-	handler := GetRouteHandle(serverType)
+	handler := GetRouteHandler(serverType)
 	var serverId string
 	if handler == nil {
 		servers :=  internal.GetServersByType(serverType)

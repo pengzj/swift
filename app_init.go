@@ -8,6 +8,7 @@ import (
 	"./internal"
 	"./server"
 	"encoding/json"
+	"./logger"
 )
 
 func (app *Application) init()  {
@@ -98,4 +99,10 @@ func (app *Application) loadDefaultConfig()  {
 	internal.SetSecretKey(string(in))
 
 	internal.PutServers(internalServers)
+
+	if len(app.logPath) == 0 {
+		panic("logPath is not aviable")
+	}
+
+	logger.SetFile(filepath.Join(app.logPath, app.server.Id + ".log"))
 }
