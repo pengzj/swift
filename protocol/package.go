@@ -159,8 +159,8 @@ func encodeNum(num int, buffer []byte, offset int)  {
 	var temp = make([]int, binary.MaxVarintLen64)
 	var count = 0
 	for {
-		left = int(num%128)
-		right =  int(math.Floor(float64(num/128)))
+		left = num&0x7f
+		right =  num >> 7
 
 		temp[count] = left | 0x80
 		count++
