@@ -102,12 +102,12 @@ func readDump(session *hub.Session)  {
 		case websocket.BinaryMessage, websocket.TextMessage:
 			session.HandleData(p)
 		case websocket.PingMessage:
-			err = conn.WriteMessage(websocket.PongMessage, []byte{})
+			err = conn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(pongWait))
 			if err != nil {
 				return
 			}
 		case websocket.CloseMessage:
-			session.Conn.Close()
+			session.Close()
 			return
 		}
 	}
