@@ -55,13 +55,14 @@ func (socket *TcpSocket) Start(host ,port string)  {
 }
 
 func readPump(session *hub.Session)  {
+	conn := session.Conn.(net.Conn)
 	var buffer bytes.Buffer
 	var headerLength = protocol.GetHeadLength()
 	var currentTotalLength int
 	var length int
 	for {
 		data := make([]byte, math.MaxUint16)
-		n, err := session.Conn.Read(data)
+		n, err := conn.Read(data)
 		if err != nil {
 			return
 		}
@@ -106,6 +107,7 @@ func readPump(session *hub.Session)  {
 }
 
 func writePump(session *hub.Session)  {
+	conn := session.Conn.(net.Conn)
 	ticker := time.NewTicker(heartbeatInterval)
 	defer ticker.Stop()
 	var buffer bytes.Buffer
@@ -119,15 +121,15 @@ func writePump(session *hub.Session)  {
 				buffer.Write(<-session.Send)
 			}
 
-			session.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
-			_, err := session.Conn.Write(buffer.Bytes())
+			conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
+			_, err := conn.Write(buffer.Bytes())
 			if err != nil {
    				return
 			}
 			buffer.Reset()
 		case <-ticker.C:
-			session.Conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
-			_, err := session.Conn.Write(protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
+			conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
+			_, err := conn.Write(protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
 			if err != nil {
 				return
 			}

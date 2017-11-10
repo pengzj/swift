@@ -3,6 +3,7 @@ package connector
 import (
 	"../hub"
 	"./tcp"
+	"./websocket"
 	"./option"
 )
 
@@ -27,6 +28,11 @@ func (connector *Connector) Start(connType, host, port string)  {
 	case "tcp":
 		connector.socket = &tcp.TcpSocket{
 			CloseChan:make(chan bool),
+		}
+	case "ws":
+		connector.socket = &websocket.WebSocket{
+			CloseChan:make(chan bool),
+			PongChan:make(chan bool),
 		}
 	}
 

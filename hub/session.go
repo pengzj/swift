@@ -1,7 +1,6 @@
 package hub
 
 import (
-	"net"
 	"io"
 	"encoding/base64"
 	"crypto/rand"
@@ -22,15 +21,13 @@ func UniqueId() string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-type message struct {
-	Id int
-	Type int
-	Body []byte
+type Connection interface {
+	Close() error
 }
 
 type Session struct {
 	Id string
-	Conn net.Conn
+	Conn Connection
 	Send chan []byte
 	handlerMap map[string]func()
 
