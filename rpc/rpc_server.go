@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"net"
-	"log"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc"
 	"../internal"
@@ -10,6 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"fmt"
 	"context"
+	"../logger"
 )
 
 type RpcServer struct {
@@ -47,7 +47,7 @@ func auth(ctx context.Context) error {
 func (rcpServer *RpcServer)Start(host, port string)  {
 	listener, err := net.Listen("tcp", host + ":" + port)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	var interceptor grpc.UnaryServerInterceptor = func(ctx context.Context, req interface{},
@@ -73,7 +73,7 @@ func (rcpServer *RpcServer)Start(host, port string)  {
 
 	reflection.Register(std.Server)
 	if err := std.Server.Serve(listener); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 

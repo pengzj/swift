@@ -6,7 +6,7 @@ import (
 	"context"
 	"../hub"
 	"../internal"
-	"log"
+	"../logger"
 )
 
 type Service struct {
@@ -36,8 +36,7 @@ func (s *Service) OnlineStatistics(ctx context.Context, in *pb.OnlineRequest) (*
 
 		r, err := c.InterOnline(context.Background(), &pb.InterOnlineRequest{})
 		if err != nil {
-			log.Fatal("inter online ", err)
-			//todo replace log
+			logger.Error("inter online ", err)
 			continue
 		}
 
@@ -58,7 +57,7 @@ func (s *Service) Offline(ctx context.Context, in *pb.OfflineRequest) (*pb.Offli
 		c := pb.NewServiceClient(conn)
 		_, err := c.InterOffline(context.Background(), &pb.InterOfflineRequest{})
 		if err != nil {
-			log.Fatal(err)
+			logger.Error(err)
 		}
 	}
 	return reply, nil

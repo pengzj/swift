@@ -39,37 +39,37 @@ func GetLevel() int {
 
 func (logger *Logger) Trace(v ...interface{})  {
 	if level <= LevelTrace {
-		write(logger, LevelTrace, v)
+		write(logger, LevelTrace, v...)
 	}
 }
 
 func (logger *Logger) Debug(v ...interface{})  {
 	if level <= LevelDebug {
-		write(logger, LevelDebug, v)
+		write(logger, LevelDebug, v...)
 	}
 }
 
 func (logger *Logger) Info(v ...interface{})  {
 	if level <= LevelInfo {
-		write(logger,LevelInfo, v)
+		write(logger,LevelInfo, v...)
 	}
 }
 
 func (logger *Logger) Warn(v ...interface{})  {
 	if level <= LevelWarn {
-		write(logger,LevelWarn, v)
+		write(logger,LevelWarn, v...)
 	}
 }
 
 func (logger *Logger) Error(v ...interface{})  {
 	if level <= LevelError {
-		write(logger,LevelError, v)
+		write(logger,LevelError, v...)
 	}
 }
 
 func (logger *Logger) Fatal(v ...interface{})  {
 	if level <= LevelFatal {
-		write(logger,LevelFatal, v)
+		write(logger,LevelFatal, v...)
 	}
 }
 
@@ -130,23 +130,17 @@ func write(logger *Logger, l int, v ...interface{})  {
 	//log.SetPrefix(t)
 	switch l {
 	case LevelTrace:
-		log.Printf("[trace]: %s",  v)
-		break
+		log.Printf("[trace]: %s",  fmt.Sprint(v...))
 	case LevelDebug:
-		log.Printf("[debug]: %s",  v)
-		break
+		log.Printf("[debug]: %s",  fmt.Sprint(v...))
 	case LevelInfo:
-		log.Printf("[info]: %s", v)
-		break
+		log.Printf("[info]: %s", fmt.Sprint(v...))
 	case LevelWarn:
-		log.Printf("[warn]: %s",  v)
-		break
+		log.Printf("[warn]: %s",  fmt.Sprint(v...))
 	case LevelError:
-		log.Printf("[error]: %s", v)
-		break
+		log.Printf("[error]: %s", fmt.Sprint(v...))
 	case LevelFatal:
-		log.Printf("[fatal]: %s", v)
-		break
+		log.Fatalf("[fatal]: %s", fmt.Sprint(v...))
 	}
 }
 
@@ -154,27 +148,27 @@ func write(logger *Logger, l int, v ...interface{})  {
 var std = new(Logger)
 
 func Trace(v ...interface{})  {
-	std.Trace(v)
+	std.Trace(v...)
 }
 
 func Debug(v ...interface{})  {
-	std.Debug(v)
+	std.Debug(v...)
 }
 
 func Info(v ...interface{})  {
-	std.Info(v)
+	std.Info(v...)
 }
 
 func Warn(v ...interface{})  {
-	std.Warn(v)
+	std.Warn(v...)
 }
 
 func Error(v ...interface{})  {
-	std.Error(v)
+	std.Error(v...)
 }
 
 func Fatal(v ...interface{})  {
-	std.Fatal(v)
+	std.Fatal(v...)
 }
 
 func SetFile(fileName string)  {

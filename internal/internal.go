@@ -2,8 +2,8 @@ package internal
 
 import (
 	"google.golang.org/grpc"
-	"log"
 	"context"
+	"../logger"
 )
 
 type Server struct {
@@ -86,7 +86,7 @@ func loadClientConnByServer(server Server)  {
 	opts = append(opts, grpc.WithPerRPCCredentials(new(customCredential)))
 	conn, err := grpc.Dial(server.Host + ":" +server.Port, opts...)
 	if err != nil {
-		log.Fatal("client conn error ",err)
+		logger.Fatal("client conn error ",err)
 	}
 
 	std.rpcClientMap[server.Id] = conn

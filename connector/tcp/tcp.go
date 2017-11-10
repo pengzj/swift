@@ -2,12 +2,12 @@ package tcp
 
 import (
 	"net"
-	"log"
 	"../../hub"
 	"bytes"
 	"../../protocol"
 	"time"
 	"math"
+	"../../logger"
 )
 
 var (
@@ -21,11 +21,11 @@ type TcpSocket struct {
 func (socket *TcpSocket) Start(host ,port string)  {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", host + ":" + port)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	listener, err := net.Listen("tcp", tcpAddr.String())
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	defer listener.Close()
 
@@ -36,7 +36,7 @@ func (socket *TcpSocket) Start(host ,port string)  {
 		default:
 			conn, err := listener.Accept()
 			if err != nil {
-				log.Fatal(err)
+				logger.Fatal(err)
 			}
 
 			session := &hub.Session{
@@ -83,7 +83,7 @@ func readPump(session *hub.Session)  {
 
 			_, err = buffer.Read(message)
 			if err != nil {
-				log.Fatalf("read data error: %v", err)
+				logger.Fatal("read data error: ", err)
 			}
 
 			session.HandleData(message)
@@ -93,7 +93,7 @@ func readPump(session *hub.Session)  {
 				leftData := make([]byte, leftLength)
 				_, err = buffer.Read(leftData)
 				if err != nil {
-					log.Fatal("package data error: %v", err)
+					logger.Fatal("package data error: %v", err)
 				}
 				buffer.Reset()
 				buffer.Write(leftData)

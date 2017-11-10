@@ -2,7 +2,7 @@ package hub
 
 import (
 	"encoding/json"
-	"log"
+	"../logger"
 	"errors"
 )
 
@@ -50,7 +50,7 @@ func GetHandlerName(handlerId int) (string, error) {
 
 func RegisterBeforeHandler(handler func(*Session, string)error)  {
 	if inter.beforeHandler != nil {
-		log.Fatal("beforeHandler register twice")
+		logger.Fatal("beforeHandler register twice")
 	}
 	inter.beforeHandler = handler
 }
@@ -94,7 +94,7 @@ func GetHandlers() []byte {
 	}
 	data, err := json.Marshal(routes)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	return data
 }

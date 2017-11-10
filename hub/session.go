@@ -5,12 +5,12 @@ import (
 	"io"
 	"encoding/base64"
 	"crypto/rand"
-	"log"
 	"../protocol"
 	"google.golang.org/grpc"
 	"hash/crc32"
 	"../internal"
 	"time"
+	"../logger"
 )
 
 
@@ -39,7 +39,7 @@ type Session struct {
 
 func (session *Session) Bind(name string, handler func())  {
 	if session.handlerMap[name] != nil {
-		log.Fatal("func " + name + "bind twice!")
+		logger.Fatal("func " + name + "bind twice!")
 	}
 	session.handlerMap[name] = handler
 }
