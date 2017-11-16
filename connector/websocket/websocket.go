@@ -5,8 +5,8 @@ import (
 	"time"
 	"net/http"
 	"log"
-	"../../hub"
-	"../../protocol"
+	"github.com/pengzj/swift/hub"
+	"github.com/pengzj/swift/protocol"
 	"bytes"
 )
 

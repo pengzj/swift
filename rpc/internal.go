@@ -2,11 +2,11 @@ package rpc
 
 import (
 	"errors"
-	"../pb"
+	"github.com/pengzj/swift/pb"
 	"context"
-	"../hub"
-	"../internal"
-	"../logger"
+	"github.com/pengzj/swift/hub"
+	"github.com/pengzj/swift/internal"
+	"github.com/pengzj/swift/logger"
 )
 
 type Service struct {

@@ -3,7 +3,7 @@ package internal
 import (
 	"google.golang.org/grpc"
 	"context"
-	"../logger"
+	"github.com/pengzj/swift/logger"
 )
 
 type Server struct {

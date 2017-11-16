@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"../logger"
+	"github.com/pengzj/swift/logger"
 )
 
 var dbMap map[string]*sql.DB = make(map[string]*sql.DB)

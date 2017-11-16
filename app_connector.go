@@ -1,7 +1,7 @@
 package swift
 
 import (
-	"./connector/option"
+	"github.com/pengzj/swift/connector/option"
 	"google.golang.org/grpc"
 )
 

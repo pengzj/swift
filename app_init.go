@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"io/ioutil"
 	"log"
-	"./internal"
-	"./server"
+	"github.com/pengzj/swift/internal"
+	"github.com/pengzj/swift/server"
 	"encoding/json"
-	"./logger"
+	"github.com/pengzj/swift/logger"
 )
 
 func (app *Application) init()  {

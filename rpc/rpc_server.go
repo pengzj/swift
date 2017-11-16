@@ -4,12 +4,12 @@ import (
 	"net"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc"
-	"../internal"
+	"github.com/pengzj/swift/internal"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/codes"
 	"fmt"
 	"context"
-	"../logger"
+	"github.com/pengzj/swift/logger"
 )
 
 type RpcServer struct {

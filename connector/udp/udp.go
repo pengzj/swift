@@ -1,7 +1,7 @@
 package udp
 
 import (
-	"../option"
+	"github.com/pengzj/swift/connector/option"
 )
 
 //todo udp will not be supported in a while, we will focus tcp/websocket

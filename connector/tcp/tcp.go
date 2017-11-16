@@ -2,12 +2,12 @@ package tcp
 
 import (
 	"net"
-	"../../hub"
+	"github.com/pengzj/swift/hub"
 	"bytes"
-	"../../protocol"
+	"github.com/pengzj/swift/protocol"
 	"time"
 	"math"
-	"../../logger"
+	"github.com/pengzj/swift/logger"
 )
 
 var (

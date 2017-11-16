@@ -1,10 +1,10 @@
 package connector
 
 import (
-	"../hub"
-	"./tcp"
-	"./websocket"
-	"./option"
+	"github.com/pengzj/swift/hub"
+	"github.com/pengzj/swift/connector/tcp"
+	"github.com/pengzj/swift/connector/websocket"
+	"github.com/pengzj/swift/connector/option"
 )
 
 type Socket interface {

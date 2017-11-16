@@ -1,9 +1,9 @@
 package server
 
 import (
-	"../connector"
-	"../connector/option"
-	"../rpc"
+	"github.com/pengzj/swift/connector"
+	"github.com/pengzj/swift/connector/option"
+	"github.com/pengzj/swift/rpc"
 )
 
 type Server struct {

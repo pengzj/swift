@@ -1,12 +1,12 @@
 package swift
 
 import (
-	"./server"
-	"./connector/option"
-	"./hub"
-	"./db"
+	"github.com/pengzj/swift/server"
+	"github.com/pengzj/swift/connector/option"
+	"github.com/pengzj/swift/hub"
+	"github.com/pengzj/swift/db"
 	"database/sql"
-	"./rpc"
+	"github.com/pengzj/swift/rpc"
 )
 
 type EnumState uint8

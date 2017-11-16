@@ -2,7 +2,7 @@ package hub
 
 import (
 	"encoding/json"
-	"../logger"
+	"github.com/pengzj/swift/logger"
 	"errors"
 )
 

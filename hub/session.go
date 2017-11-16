@@ -4,12 +4,12 @@ import (
 	"io"
 	"encoding/base64"
 	"crypto/rand"
-	"../protocol"
+	"github.com/pengzj/swift/protocol"
 	"google.golang.org/grpc"
 	"hash/crc32"
-	"../internal"
+	"github.com/pengzj/swift/internal"
 	"time"
-	"../logger"
+	"github.com/pengzj/swift/logger"
 )
 
 
