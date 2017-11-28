@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"time"
 	"net/http"
-	"log"
+	"github.com/pengzj/swift/logger"
 	"github.com/pengzj/swift/hub"
 	"github.com/pengzj/swift/protocol"
 	"bytes"
@@ -42,6 +42,7 @@ const (
 )
 
 func (socket *WebSocket) Start(host, port string)  {
+	upgrader.CheckOrigin = func(r *http.Request) bool {return  true}
 	socket.server = &http.Server{Addr: host + ":" + port, Handler:nil}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(w, r)
@@ -54,7 +55,7 @@ func (socket *WebSocket) Start(host, port string)  {
 		err = socket.server.ListenAndServe()
 	}
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 
@@ -66,7 +67,7 @@ func (socket *WebSocket) Close()  {
 func serveWs(w http.ResponseWriter, r *http.Request)  {
 	conn, err := upgrader.Upgrade(w,r, nil)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	session := &hub.Session{
@@ -93,7 +94,7 @@ func readDump(session *hub.Session)  {
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
-				log.Printf("error: %v", err)
+				logger.Error(err)
 			}
 			return
 		}
@@ -127,17 +128,28 @@ func writeDump(session *hub.Session)  {
 			for i := 0; i < n; i++ {
 				buffer.Write(<-session.Send)
 			}
-
 			conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
-			err := conn.WriteMessage(websocket.BinaryMessage, buffer.Bytes())
+			w, err := conn.NextWriter(websocket.BinaryMessage)
 			if err != nil {
+				logger.Error(err)
+				return
+			}
+			w.Write(buffer.Bytes())
+			if err = w.Close(); err != nil {
+				logger.Error(err)
 				return
 			}
 			buffer.Reset()
 		case <-ticker.C:
 			conn.SetWriteDeadline(time.Now().Add(heartbeatInterval))
-			err := conn.WriteMessage(websocket.BinaryMessage, protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
+			w, err := conn.NextWriter(websocket.BinaryMessage)
 			if err != nil {
+				logger.Error(err)
+				return
+			}
+			w.Write(protocol.Encode(protocol.TYPE_HEARTBEAT, []byte{}))
+			if err = w.Close(); err != nil {
+				logger.Error(err)
 				return
 			}
 		}
