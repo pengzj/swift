@@ -10,6 +10,7 @@ type Hub struct {
 	Register chan *Session
 	Unregister chan *Session
 	Closed chan bool
+	Count int
 	mu sync.Mutex
 
 }
@@ -32,10 +33,12 @@ func (hub *Hub) Run()  {
 			hub.mu.Lock()
 			hub.Sessions[session.Id] = session
 			hub.mu.Unlock()
+			hub.Count++
 		case session := <-hub.Unregister:
 			hub.mu.Lock()
 			delete(hub.Sessions, session.Id)
 			hub.mu.Unlock()
+			hub.Count--
 		case  <- hub.Closed:
 			return
 		}
@@ -67,7 +70,7 @@ func (hub *Hub) Kick(session *Session)  {
 }
 
 func (hub *Hub) Size() int {
-	return len(hub.Sessions)
+	return hub.Count
 }
 
 func GetHub()  *Hub {

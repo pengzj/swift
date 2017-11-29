@@ -55,6 +55,7 @@ func (socket *TcpSocket) Start(host ,port string)  {
 }
 
 func readPump(session *hub.Session)  {
+	defer session.Close()
 	conn := session.Conn.(net.Conn)
 	var buffer bytes.Buffer
 	var headerLength = protocol.GetHeadLength()
@@ -107,6 +108,7 @@ func readPump(session *hub.Session)  {
 }
 
 func writePump(session *hub.Session)  {
+	defer session.Close()
 	conn := session.Conn.(net.Conn)
 	ticker := time.NewTicker(heartbeatInterval)
 	defer ticker.Stop()

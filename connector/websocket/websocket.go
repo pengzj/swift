@@ -82,6 +82,7 @@ func serveWs(w http.ResponseWriter, r *http.Request)  {
 }
 
 func readDump(session *hub.Session)  {
+	defer session.Close()
 	conn := session.Conn.(*websocket.Conn)
 	conn.SetReadLimit(int64(1024 * 1024 * 1024))
 	conn.SetReadDeadline(time.Now().Add(pongWait))
@@ -115,6 +116,7 @@ func readDump(session *hub.Session)  {
 }
 
 func writeDump(session *hub.Session)  {
+	defer session.Close()
 	conn := session.Conn.(*websocket.Conn)
 	ticker := time.NewTicker(heartbeatInterval)
 	defer ticker.Stop()

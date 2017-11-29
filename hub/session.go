@@ -12,6 +12,11 @@ import (
 	"github.com/pengzj/swift/logger"
 )
 
+const (
+	STATE_UNAVAIABLE = 1
+	STATE_AVAIABLE = 2
+)
+
 
 func UniqueId() string {
 	b := make([]byte, 32)
@@ -29,6 +34,7 @@ type Session struct {
 	Id string
 	Conn Connection
 	Send chan []byte
+	state int
 	handlerMap map[string]func()
 
 	userData map[string]interface{}
@@ -93,6 +99,10 @@ func (session *Session) HandleData(data []byte)  {
 }
 
 func (session *Session) Close()  {
+	if session.state == STATE_UNAVAIABLE {
+		return
+	}
+	session.state = STATE_UNAVAIABLE
 	GetHub().Unregister <- session
 	session.Trigger("onClosed")
 	session.Conn.Close()
