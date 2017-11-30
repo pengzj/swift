@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/codes"
 	"fmt"
-	"context"
+	"golang.org/x/net/context"
 	"github.com/pengzj/swift/logger"
 )
 
