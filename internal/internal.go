@@ -2,7 +2,7 @@ package internal
 
 import (
 	"google.golang.org/grpc"
-	"context"
+	"golang.org/x/net/context"
 	"github.com/pengzj/swift/logger"
 )
 

@@ -62,6 +62,7 @@ func readPump(session *hub.Session)  {
 	var currentTotalLength int
 	var length int
 	for {
+		conn.SetReadDeadline(time.Now().Add(heartbeatInterval))
 		data := make([]byte, math.MaxUint16)
 		n, err := conn.Read(data)
 		if err != nil {
