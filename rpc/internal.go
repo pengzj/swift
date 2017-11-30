@@ -3,7 +3,7 @@ package rpc
 import (
 	"errors"
 	"github.com/pengzj/swift/pb"
-	"context"
+	"golang.org/x/net/context"
 	"github.com/pengzj/swift/hub"
 	"github.com/pengzj/swift/internal"
 	"github.com/pengzj/swift/logger"
