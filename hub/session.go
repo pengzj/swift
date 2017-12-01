@@ -103,10 +103,10 @@ func (session *Session) Close()  {
 		return
 	}
 	session.state = STATE_UNAVAIABLE
-	GetHub().Unregister <- session
 	session.Trigger("onClosed")
 	session.Conn.Close()
 	close(session.Send)
+	GetHub().Unregister <- session
 }
 
 func (session *Session) Write(data []byte)  {

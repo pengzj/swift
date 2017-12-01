@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"github.com/pengzj/swift/protocol"
 	"time"
-	"math"
 	"github.com/pengzj/swift/logger"
 )
 
@@ -61,17 +60,28 @@ func readPump(session *hub.Session)  {
 	var headerLength = protocol.GetHeadLength()
 	var currentTotalLength int
 	var length int
+
+
+
+
 	for {
 		conn.SetReadDeadline(time.Now().Add(heartbeatInterval))
-		data := make([]byte, math.MaxUint16)
-		n, err := conn.Read(data)
+
+		tmp := make([]byte, 2048)
+		n, err := conn.Read(tmp)
 		if err != nil {
+			logger.Error(err)
 			return
 		}
+
 		buf := make([]byte, n)
-		copy(buf, data[0:n])
+		copy(buf, tmp[0:n])
 
 		buffer.Write(buf)
+
+		tmp = nil
+		buf = nil
+
 
 
 		//do with packet splicing
@@ -84,7 +94,7 @@ func readPump(session *hub.Session)  {
 				break
 			}
 
-			_, err = buffer.Read(message)
+			_, err := buffer.Read(message)
 			if err != nil {
 				logger.Fatal("read data error: ", err)
 			}
