@@ -62,12 +62,10 @@ func readPump(session *hub.Session)  {
 	var length int
 
 
-
-
 	for {
 		conn.SetReadDeadline(time.Now().Add(heartbeatInterval))
 
-		tmp := make([]byte, 2048)
+		tmp := make([]byte, 512)
 		n, err := conn.Read(tmp)
 		if err != nil {
 			logger.Error(err)
@@ -78,10 +76,6 @@ func readPump(session *hub.Session)  {
 		copy(buf, tmp[0:n])
 
 		buffer.Write(buf)
-
-		tmp = nil
-		buf = nil
-
 
 
 		//do with packet splicing
