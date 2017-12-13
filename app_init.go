@@ -96,7 +96,7 @@ func (app *Application) loadDefaultConfig()  {
 		log.Fatal(err)
 	}
 
-	internal.SetSecretKey(string(in))
+	internal.SetSecretKey(string(in[:len(in)-1]))
 
 	internal.PutServers(internalServers)
 
