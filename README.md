@@ -54,10 +54,9 @@ asdfkksad$sadfk
 
 # to do list
  
-data  async  to db  
+data  async  to db  **in progress**  
 optimize internal interface  
 manage tool  
-cronjob  
 service    
 test case  
 benchmark 
