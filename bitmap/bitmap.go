@@ -24,7 +24,7 @@ func (b *Bitmap) Set(i uint) {
 func (b *Bitmap) Clear(i uint)  {
 	offset := int(i >>SHIFT + 1) - len(b.db)
 	if offset > 0 {
-		b.db = append(b.db, make([]uint, offset)...)
+		return
 	}
 
 	b.db[i>>SHIFT] &= ^(1<<(i & MASK));
