@@ -5,40 +5,42 @@ const (
 	MASK = 0x1F
 )
 type Bitmap struct {
-	db []uint
+	db []int
 }
 
 func NewBitmap() *Bitmap {
-	return &Bitmap{db: make([]uint, 0, 50)}
+	return &Bitmap{db: make([]int, 0, 50)}
 }
 
-func (b *Bitmap) Set(i uint) {
+func (b *Bitmap) Set(i int) {
 	offset := int(i >>SHIFT + 1) - len(b.db)
 	if offset > 0 {
-		b.db = append(b.db, make([]uint, offset)...)
+		b.db = append(b.db, make([]int, offset)...)
 	}
 
-	b.db[i>>SHIFT] |= (1 << (i & MASK))
+	tmp := uint(i)
+	b.db[tmp>>SHIFT] |= (1 << (tmp & MASK))
 }
 
-func (b *Bitmap) Clear(i uint)  {
+func (b *Bitmap) Clear(i int)  {
 	offset := int(i >>SHIFT + 1) - len(b.db)
 	if offset > 0 {
 		return
 	}
-
-	b.db[i>>SHIFT] &= ^(1<<(i & MASK));
+	tmp := uint(i)
+	b.db[tmp>>SHIFT] &= ^(1<<(tmp & MASK));
 }
 
-func (b *Bitmap) Get(i uint) uint {
+func (b *Bitmap) Get(i int) int {
 	offset := int(i >>SHIFT + 1) - len(b.db)
 	if offset > 0 {
 		return 0
 	}
-	return b.db[i>>SHIFT] & (1<<(i&MASK))
+	tmp := uint(i)
+	return b.db[tmp>>SHIFT] & (1<<(tmp&MASK))
 }
 
-func (b *Bitmap) All() []uint {
+func (b *Bitmap) All() []int {
 	return b.db
 }
 

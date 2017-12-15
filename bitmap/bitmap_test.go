@@ -16,8 +16,9 @@ func TestBitmap_Get(t *testing.T) {
 	if bt.Get(88) == 0 {
 		t.Fatal("100 not in bitmap")
 	}
-	//bt.Clear(100)
+	bt.Clear(1000)
 	bt.Clear(88)
+	bt.Clear(99)
 	t.Log(bt.All())
 }
 
