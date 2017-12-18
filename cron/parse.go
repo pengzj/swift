@@ -16,6 +16,7 @@ type CronSchedule struct {
 	Month *bitmap.Bitmap
 	Week *bitmap.Bitmap
 	Year *bitmap.Bitmap
+	Deadline time.Time
 }
 
 func (schedule *CronSchedule) CanTrigger(t time.Time) bool{
@@ -40,6 +41,10 @@ func (schedule *CronSchedule) CanTrigger(t time.Time) bool{
 	}
 
 	return true
+}
+
+func (schedule *CronSchedule) HasFinished() bool {
+	return time.Now().After(schedule.Deadline)
 }
 
 func Parse(spec string) (*CronSchedule, error) {
@@ -78,72 +83,101 @@ func Parse(spec string) (*CronSchedule, error) {
 		Year:bitmap.NewBitmap(),
 	}
 
+	var fixedYear, fixedDate, fixedHour, fixedMinute int
+	var fixedMonth time.Month
+
 	if Str2Any(minute) {
 		for i :=0; i < 60; i++ {
 			schedule.Minute.Set(i)
 		}
+		fixedMinute = 59
 	} else if values, err := Str2Values(minute); err == nil {
 		for _, value :=range values {
 			schedule.Minute.Set(value)
+
+			if value > fixedMinute {
+				 fixedMinute = value
+			}
 		}
 	} else if value, err := Str2Int(minute); err == nil {
 		schedule.Minute.Set(value)
+		fixedMinute = value
 	} else if repeat, err := Str2Repeat(minute); err == nil {
 		times := 59 / repeat
 		for i := 0; i <= times; i++ {
 			schedule.Minute.Set(i * repeat)
 		}
+		fixedMinute = 59
 	}
 
 	if Str2Any(hour) {
 		for i :=0; i < 24; i++ {
 			schedule.Hour.Set(i)
 		}
+		fixedHour = 23
 	} else if values, err := Str2Values(hour); err == nil {
 		for _, value :=range values {
 			schedule.Hour.Set(value)
+
+			if value > fixedHour {
+				fixedHour = value
+			}
 		}
 	} else if value, err := Str2Int(hour); err == nil {
 		schedule.Hour.Set(value)
+		fixedHour = value
 	} else   if repeat, err := Str2Repeat(hour); err == nil {
 		times := 23 / repeat
 		for i := 0; i <= times; i++ {
 			schedule.Hour.Set(i * repeat)
 		}
+		fixedHour = 23
 	}
 
 	if Str2Any(dayofmonth) {
 		for i :=1; i < 31; i++ {
 			schedule.Day.Set(i)
 		}
+		fixedDate = 31
 	} else if values, err := Str2Values(dayofmonth); err == nil {
 		for _, value :=range values {
 			schedule.Day.Set(value)
+			if value > fixedDate {
+				fixedDate = value
+			}
 		}
 	} else if value, err := Str2Int(dayofmonth); err == nil {
 		schedule.Day.Set(value)
+		fixedDate = value
 	} else   if repeat, err := Str2Repeat(dayofmonth); err == nil {
 		times := 31 / repeat
 		for i := 0; i <= times; i++ {
 			schedule.Day.Set(i * repeat)
 		}
+		fixedDate = 31
 	}
 
 	if Str2Any(month) {
 		for i :=1; i <= 12; i++ {
 			schedule.Month.Set(i)
 		}
+		fixedMonth = time.December
 	} else if values, err := Str2Values(month); err == nil {
 		for _, value :=range values {
 			schedule.Month.Set(value)
+			if value > int(fixedMonth) {
+				fixedMonth = time.Month(value)
+			}
 		}
 	} else if value, err := Str2Int(month); err == nil {
 		schedule.Month.Set(value)
+		fixedMonth = time.Month(value)
 	} else   if repeat, err := Str2Repeat(month); err == nil {
 		times := 11 / repeat
 		for i := 0; i < times; i++ {
 			schedule.Month.Set(i * repeat)
 		}
+		fixedMonth = time.December
 	}
 
 	if Str2Any(dayofweek) {
@@ -169,19 +203,27 @@ func Parse(spec string) (*CronSchedule, error) {
 		for i :=y; i < 10000; i++ {
 			schedule.Year.Set(i)
 		}
+		fixedYear = 9999
 	} else if values, err := Str2Values(year); err == nil {
 		for _, value :=range values {
 			schedule.Year.Set(value)
+			if value > fixedYear {
+				fixedYear = value
+			}
 		}
 	} else if value, err := Str2Int(year); err == nil {
 		schedule.Year.Set(value)
+		fixedYear = value
 	} else   if repeat, err := Str2Repeat(year); err == nil {
 		start := y/repeat
 		times := (9999 - y) / repeat
 		for i := start; i <= times; i++ {
 			schedule.Year.Set(i * repeat)
 		}
+		fixedYear = 9999
 	}
+
+	schedule.Deadline = time.Date(fixedYear,fixedMonth, fixedDate, fixedHour, fixedMinute, 0,0, time.Now().Location())
 
 	return schedule, nil
 }

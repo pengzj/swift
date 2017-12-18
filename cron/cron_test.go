@@ -78,7 +78,6 @@ func TestStr2Repeat(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	defer StopJob()
 	oneSchedule, err := Parse("* * * * 0,3 *")
 	if err != nil {
 		t.Fatal(err)
@@ -87,5 +86,11 @@ func TestParse(t *testing.T) {
 
 	AddJob("*/2 * * * * *", func() {
 		t.Log(time.Now(), "hello cron")
+	})
+}
+
+func TestAddJob(t *testing.T) {
+	AddJob("55 * * * * *", func() {
+		t.Log(time.Now(), "hello, 55 job")
 	})
 }

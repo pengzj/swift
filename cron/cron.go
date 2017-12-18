@@ -25,6 +25,7 @@ type Job interface {
 
 type Schedule interface {
 	CanTrigger(time.Time) bool
+	HasFinished() bool
 }
 
 type Entry struct {
@@ -93,21 +94,25 @@ func (c *Cron) Run()  {
 }
 
 func (c *Cron) run()  {
-	ticket := time.NewTicker(time.Second * 20)
+	ticket := time.NewTicker(time.Second * 60)
 	defer ticket.Stop()
 	for {
 		select {
 		case <-ticket.C:
-			fmt.Println("hello ticket", time.Now())
+			fmt.Println(time.Now(), "hello ticket")
 			now := time.Now()
-			for _, e := range c.entries {
+			for index, e := range c.entries {
 				if e.Schedule.CanTrigger(now) {
 					go c.runWithRecovery(e.Job)
+				}
+
+				if e.Schedule.HasFinished() {
+					c.entries[index] = c.entries[len(c.entries)-1]
+					c.entries = c.entries[:len(c.entries)-1]
 				}
 			}
 		case newEntry := <-c.add:
 			c.entries = append(c.entries, newEntry)
-			fmt.Println("add func ", time.Now())
 		case <- c.stop:
 			c.running = false
 			return
